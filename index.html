@@ -268,11 +268,12 @@
   /* =====================================================================
      MOBILE (FIELD) APP
   ===================================================================== */
-  .mobile-stage{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .mobile-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+  .mobile-caption{font-size:12.5px;color:var(--text-3);text-align:center;max-width:560px;line-height:1.5;padding:0 12px}
   .mobile-intro{text-align:center;max-width:520px;margin:0 auto 4px}
   .mobile-intro h2{font-size:18px;font-weight:700;letter-spacing:-.01em}
   .mobile-intro p{font-size:13.5px;color:var(--text-2);margin-top:6px}
-  .phone{width:390px;max-width:94vw;height:800px;background:#000;border-radius:46px;padding:11px;box-shadow:var(--sh-lg);position:relative}
+  .phone{width:min(390px,92vw);height:min(780px, calc(100dvh - 150px));background:#000;border-radius:46px;padding:11px;box-shadow:var(--sh-lg);position:relative}
   .screen-m{width:100%;height:100%;background:var(--surface-2);border-radius:36px;overflow:hidden;position:relative;display:flex;flex-direction:column}
   .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:140px;height:27px;background:#000;border-radius:0 0 18px 18px;z-index:20}
   .statusbar{height:46px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 24px 5px;font-size:13px;font-weight:700;color:var(--text);flex-shrink:0;background:var(--surface)}
@@ -366,7 +367,7 @@
   .fab:active{transform:scale(.94)}
   .backbtn{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--text-2);margin-bottom:2px}
 
-  .footnote{text-align:center;font-size:12px;color:var(--text-3);max-width:760px;margin:24px auto 6px;line-height:1.6}
+  .footnote{display:none;text-align:center;font-size:12px;color:var(--text-3);max-width:760px;margin:24px auto 6px;line-height:1.6}
 
   @media(max-width:1080px){
     .auth-web{grid-template-columns:1fr}.auth-brand{display:none}
@@ -383,6 +384,12 @@
   @media(max-width:560px){
     .stage{padding:10px}.kpis,.pcards,.formgrid{grid-template-columns:1fr}
     .chrome{flex-wrap:wrap}.hint{display:none}.auth-form{padding:32px 24px}
+  }
+
+  /* phones: fit the Field/Mobile mock entirely on screen — no page scroll */
+  @media(max-width:680px){
+    .mobile-stage{gap:8px}
+    .m-login{overflow-y:auto}
   }
 
   /* ---------- Interactive: modal / toast / notifications ---------- */
@@ -963,10 +970,6 @@
 ================================================================ -->
 <div id="mobileMode" class="hidden">
   <div class="mobile-stage">
-    <div class="mobile-intro">
-      <h2>The field app for your crew</h2>
-      <p>Same data as the office — built for on-site use: sign in, document, track time, and complete forms. Works offline too.</p>
-    </div>
     <div class="phone">
       <div class="notch"></div>
       <div class="screen-m">
@@ -1128,9 +1131,7 @@
 
       </div>
     </div>
-    <div class="mobile-intro" style="margin-top:6px">
-      <p style="font-size:12.5px;color:var(--text-3)">Sign in, then tap the quick actions (Photo, Form, Time, Scan), the cards, or the bottom navigation to click through. Tap Profile to return to the login screen.</p>
-    </div>
+    <div class="mobile-caption">Sign in, then tap the quick actions (Photo, Form, Time, Scan), the cards, or the bottom navigation to explore.</div>
   </div>
 </div>
 
@@ -1150,7 +1151,8 @@
     web.classList.toggle('hidden', mode!=='web');
     mob.classList.toggle('hidden', mode!=='mobile');
     if(mode==='web'){ webLogout(); } else { mobileLogout(); }
-    window.scrollTo({top:0,behavior:'smooth'});
+    window.scrollTo(0,0);
+    fitPhone();
   }
 
   /* ---- WEB auth ---- */
@@ -1222,6 +1224,35 @@
     var darkTop = (screen==='login' || screen==='projects' || screen==='camera');
     bar.classList.toggle('dark', darkTop);
   }
+
+  /* size & center the Field/Mobile phone mock so it fits the screen exactly */
+  function fitPhone(){
+    var mob = document.getElementById('mobileMode');
+    if(!mob || mob.classList.contains('hidden')) return;
+    var stage = document.querySelector('.mobile-stage');
+    var phone = document.querySelector('.phone');
+    if(!stage || !phone) return;
+    var chrome = document.querySelector('.chrome');
+    var cap = document.querySelector('.mobile-caption');
+    window.scrollTo(0, 0);
+    requestAnimationFrame(function(){
+      var chromeH = chrome ? chrome.offsetHeight : 53;
+      var avail = window.innerHeight - chromeH;     // vertical space below the top bar
+      stage.style.height = avail + 'px';            // lets the phone center vertically
+      var ratio = 390 / 800;
+      var capH = cap ? cap.offsetHeight : 0;
+      var maxH = avail - capH - 30;                 // room left after the caption + gaps
+      var maxW = window.innerWidth * 0.94;
+      var h = Math.min(800, maxH, maxW / ratio);    // largest phone that fits BOTH ways
+      h = Math.max(360, h);
+      phone.style.height = h + 'px';
+      phone.style.width  = (h * ratio) + 'px';
+      phone.style.maxWidth = 'none';
+    });
+  }
+  window.addEventListener('resize', fitPhone);
+  window.addEventListener('orientationchange', fitPhone);
+  window.addEventListener('load', function(){ setTimeout(fitPhone, 60); });
 </script>
 
 <script>
