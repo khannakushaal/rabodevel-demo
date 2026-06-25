@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baupilot – Clickable Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#F4F6F8; --surface-3:#EBEEF2;
+    --border:#E2E7EC; --border-strong:#CDD5DD;
+    --text:#101828; --text-2:#475467; --text-3:#8A95A5;
+    --primary:#EA580C; --primary-hover:#C2410C; --primary-soft:#FFF1E8; --primary-soft-2:#FFE3D1;
+    --ink:#0E1726; --ink-2:#1B2738; --ink-3:#2A3A52;
+    --success:#15803D; --success-soft:#DCFCE7;
+    --warning:#B45309; --warning-soft:#FEF3C7;
+    --info:#1D4ED8; --info-soft:#DBEAFE;
+    --danger:#DC2626; --danger-soft:#FEE2E2;
+    --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px;
+    --sh-sm:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.05);
+    --sh:0 4px 12px rgba(16,24,40,.08);
+    --sh-lg:0 12px 32px rgba(16,24,40,.16);
+    --fs:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--fs);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.5}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input{font-family:inherit}
+  button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:6px}
+  .tnum{font-variant-numeric:tabular-nums}
+  svg{display:block}
+
+  /* ---------- Top chrome / mode switch ---------- */
+  .chrome{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;
+    padding:10px 18px;gap:16px}
+  .chrome .brandmark{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em}
+  .chrome .logo{width:30px;height:30px;border-radius:9px;background:var(--primary);display:grid;place-items:center;box-shadow:var(--sh-sm)}
+  .chrome .tag{font-size:11px;color:var(--text-3);font-weight:600;border:1px solid var(--border);padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+  .modetabs{display:flex;background:var(--surface-3);padding:4px;border-radius:999px;gap:4px}
+  .modetabs button{display:flex;align-items:center;gap:7px;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:600;color:var(--text-2);transition:all .18s ease}
+  .modetabs button.active{background:var(--surface);color:var(--text);box-shadow:var(--sh-sm)}
+  .hint{font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:6px}
+
+  .stage{padding:22px;min-height:calc(100vh - 53px)}
+  .hidden{display:none!important}
+
+  /* =====================================================================
+     AUTH (LOGIN) — WEB
+  ===================================================================== */
+  .auth-web{max-width:1080px;margin:18px auto;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);display:grid;grid-template-columns:1.05fr 1fr;min-height:600px}
+  .auth-brand{background:radial-gradient(120% 120% at 0% 0%,#1B2738 0%,#0E1726 60%);color:#fff;padding:44px 42px;display:flex;flex-direction:column}
+  .auth-brand .blogo{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .auth-brand .blogo .logo{width:38px;height:38px;border-radius:11px;background:var(--primary);display:grid;place-items:center}
+  .auth-brand h2{font-size:30px;font-weight:800;letter-spacing:-.03em;margin-top:auto;line-height:1.18}
+  .auth-brand h2 em{color:var(--primary);font-style:normal}
+  .auth-brand .feats{margin-top:26px;display:flex;flex-direction:column;gap:15px}
+  .auth-brand .feat{display:flex;align-items:flex-start;gap:12px;font-size:13.5px;color:#C7D0DC}
+  .auth-brand .feat .fi{width:30px;height:30px;border-radius:9px;background:rgba(234,88,12,.16);color:#FDA571;display:grid;place-items:center;flex-shrink:0}
+  .auth-brand .quote{margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);font-size:13px;color:#9FB0C6;line-height:1.6}
+  .auth-form{padding:46px 44px;display:flex;flex-direction:column;justify-content:center}
+  .auth-form h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .auth-form .lead{font-size:13.5px;color:var(--text-2);margin-top:6px;margin-bottom:26px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:7px}
+  .field .inwrap{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border-strong);border-radius:11px;padding:0 13px;transition:border-color .15s,box-shadow .15s}
+  .field .inwrap:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .field .inwrap svg{color:var(--text-3)}
+  .field input{border:none;outline:none;background:none;padding:13px 0;font-size:14px;width:100%;color:var(--text)}
+  .field .toggle{color:var(--text-3);font-size:12px;font-weight:600}
+  .rowbetween{display:flex;align-items:center;justify-content:space-between;margin:4px 0 22px}
+  .check{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-2)}
+  .check .box{width:17px;height:17px;border-radius:5px;border:1.8px solid var(--border-strong);display:grid;place-items:center}
+  .check .box.on{background:var(--primary);border-color:var(--primary)}
+  .link{font-size:12.5px;color:var(--primary);font-weight:600}
+  .auth-btn{width:100%;padding:14px;border-radius:11px;font-size:14.5px;font-weight:700;color:#fff;background:var(--primary);display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+  .auth-btn:hover{background:var(--primary-hover)}
+  .divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text-3);font-size:12px;font-weight:600}
+  .divider::before,.divider::after{content:"";height:1px;background:var(--border);flex:1}
+  .ssobtn{width:100%;padding:12px;border-radius:11px;font-size:13.5px;font-weight:600;color:var(--text);background:var(--surface);border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;gap:9px;transition:border-color .15s}
+  .ssobtn:hover{border-color:var(--text-3)}
+  .auth-foot{text-align:center;font-size:13px;color:var(--text-2);margin-top:24px}
+  .auth-foot a{color:var(--primary);font-weight:700}
+
+  /* =====================================================================
+     WEB (OFFICE) APP
+  ===================================================================== */
+  .web-app{max-width:1280px;margin:0 auto;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-lg);display:grid;grid-template-columns:236px 1fr;grid-template-rows:minmax(0,1fr);height:calc(100vh - 97px);height:calc(100dvh - 97px);min-height:560px}
+  .side{background:var(--ink);color:#C7D0DC;display:flex;flex-direction:column;padding:18px 14px;overflow-y:auto}
+  .side .brand{display:flex;align-items:center;gap:11px;padding:6px 8px 18px;font-weight:800;color:#fff;letter-spacing:-.02em;font-size:17px}
+  .side .brand .logo{width:34px;height:34px;border-radius:10px;background:var(--primary);display:grid;place-items:center}
+  .side .newbtn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--primary);color:#fff;
+    font-weight:600;font-size:13.5px;padding:11px;border-radius:10px;margin-bottom:16px;transition:background .15s}
+  .side .newbtn:hover{background:var(--primary-hover)}
+  .navlabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:#5E6E84;font-weight:700;padding:8px 10px 6px}
+  .navitem{display:flex;align-items:center;gap:11px;padding:9.5px 11px;border-radius:9px;font-size:13.5px;font-weight:500;
+    color:#AEB9C7;width:100%;text-align:left;transition:all .15s;margin-bottom:2px}
+  .navitem:hover{background:var(--ink-2);color:#fff}
+  .navitem.active{background:var(--ink-3);color:#fff}
+  .navitem .ico{opacity:.85}
+  .navitem .badge{margin-left:auto;background:var(--primary);color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;
+    border-radius:999px;display:grid;place-items:center;padding:0 5px}
+  .side .spacer{flex:1}
+  .side .me{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;background:var(--ink-2);margin-top:8px}
+  .side .me .av{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#F59E0B,#EA580C);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px}
+  .side .me .nm{font-size:13px;color:#fff;font-weight:600;line-height:1.2}
+  .side .me .ro{font-size:11.5px;color:#8A95A5}
+  .side .me .out{margin-left:auto;color:#8A95A5;width:30px;height:30px;border-radius:8px;display:grid;place-items:center}
+  .side .me .out:hover{background:var(--ink-3);color:#fff}
+
+  .main{display:flex;flex-direction:column;min-width:0;background:var(--surface-2);position:relative}
+  .topbar{height:62px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;
+    gap:14px;padding:0 22px;flex-shrink:0}
+  .crumb{font-size:13px;color:var(--text-3);font-weight:500}
+  .crumb b{color:var(--text);font-weight:700}
+  .search{flex:1;max-width:420px;display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:10px;padding:9px 13px;color:var(--text-3);font-size:13px}
+  .search input{border:none;background:none;outline:none;font:inherit;color:var(--text);width:100%}
+  .iconbtn{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--text-2);position:relative;transition:background .15s}
+  .iconbtn:hover{background:var(--surface-2)}
+  .iconbtn .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;background:var(--primary);border-radius:50%;border:2px solid var(--surface)}
+  .content{padding:24px;overflow:auto;flex:1;min-height:0}
+
+  /* mobile dropdown nav for the office web app */
+  .menubtn{display:none;width:38px;height:38px;border-radius:10px;place-items:center;color:var(--text-2);flex-shrink:0}
+  .menubtn:hover{background:var(--surface-2)}
+  .navmenu{position:absolute;top:60px;left:14px;right:14px;max-width:330px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh-lg);z-index:80;padding:8px;display:none}
+  .navmenu.show{display:block;animation:pop .16s ease}
+  .navmenu .nav-m{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;font-size:14.5px;font-weight:600;color:var(--text);width:100%;text-align:left}
+  .navmenu .nav-m:hover{background:var(--surface-2)}
+  .navmenu .nav-m.active{background:var(--primary-soft);color:var(--primary)}
+  .navmenu .nav-m.active .mic{color:var(--primary)}
+  .navmenu .nav-m .mic{color:var(--text-3);display:grid;place-items:center}
+  .navmenu .nav-m .badge{margin-left:auto;background:var(--primary);color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:999px;display:grid;place-items:center;padding:0 5px}
+  .navmenu .nav-m.danger{color:var(--danger)}.navmenu .nav-m.danger .mic{color:var(--danger)}
+  .navmenu .navlabel2{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);font-weight:700;padding:8px 12px 4px}
+  .navmenu .sep{height:1px;background:var(--border);margin:6px}
+  @media(min-width:1081px){.navmenu{display:none!important}}
+
+  .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+  .pagehead h1{font-size:22px;font-weight:700;letter-spacing:-.02em}
+  .pagehead p{font-size:13.5px;color:var(--text-2);margin-top:3px}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;padding:10px 15px;border-radius:10px;transition:all .15s}
+  .btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-hover)}
+  .btn-ghost{background:var(--surface);color:var(--text-2);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--border-strong);color:var(--text)}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 17px;box-shadow:var(--sh-sm)}
+  .kpi .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;margin-bottom:12px}
+  .kpi .v{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .kpi .l{font-size:12.5px;color:var(--text-2);margin-top:5px;font-weight:500}
+  .kpi .tr{font-size:11.5px;font-weight:700;margin-top:8px;display:inline-flex;align-items:center;gap:3px}
+  .up{color:var(--success)} .down{color:var(--danger)}
+
+  .grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:18px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-sm)}
+  .card .ch{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border)}
+  .card .ch h3{font-size:15px;font-weight:700}
+  .card .ch a{font-size:12.5px;color:var(--primary);font-weight:600}
+  .card .cb{padding:8px 0}
+
+  .feed-row{display:flex;gap:12px;padding:12px 18px;align-items:flex-start}
+  .feed-row:hover{background:var(--surface-2)}
+  .av{flex-shrink:0;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12.5px}
+  .a1{background:linear-gradient(135deg,#3B82F6,#1D4ED8)} .a2{background:linear-gradient(135deg,#10B981,#047857)}
+  .a3{background:linear-gradient(135deg,#F59E0B,#D97706)} .a4{background:linear-gradient(135deg,#8B5CF6,#6D28D9)}
+  .a5{background:linear-gradient(135deg,#EC4899,#BE185D)}
+  .feed-row .ft{font-size:13.5px;color:var(--text);line-height:1.45}
+  .feed-row .ft b{font-weight:600}
+  .feed-row .fm{font-size:12px;color:var(--text-3);margin-top:3px;display:flex;align-items:center;gap:7px}
+  .chiptype{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .photo-thumbs{display:flex;gap:7px;margin-top:9px}
+  .ph{width:74px;height:54px;border-radius:8px;display:grid;place-items:center;color:#fff;
+    background:linear-gradient(135deg,#64748B,#334155);position:relative;overflow:hidden}
+  .ph svg{opacity:.7}
+
+  .plist{display:flex;flex-direction:column}
+  .prow{display:grid;grid-template-columns:1fr auto;gap:12px;padding:13px 18px;align-items:center;cursor:pointer;border-bottom:1px solid var(--border)}
+  .prow:last-child{border-bottom:none}
+  .prow:hover{background:var(--surface-2)}
+  .prow .pn{font-size:13.5px;font-weight:600}
+  .prow .pc{font-size:12px;color:var(--text-3);margin-top:2px}
+  .badge2{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .b-prog{background:var(--info-soft);color:var(--info)}
+  .b-plan{background:var(--warning-soft);color:var(--warning)}
+  .b-done{background:var(--success-soft);color:var(--success)}
+  .b-req{background:var(--surface-3);color:var(--text-2)}
+  .progress{height:6px;border-radius:999px;background:var(--surface-3);overflow:hidden;margin-top:7px}
+  .progress i{display:block;height:100%;background:var(--primary);border-radius:999px}
+
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{font-size:12.5px;font-weight:600;color:var(--text-2);background:var(--surface);border:1px solid var(--border);padding:7px 13px;border-radius:999px;transition:all .15s}
+  .chip:hover{border-color:var(--border-strong)}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px;box-shadow:var(--sh-sm);cursor:pointer;transition:all .15s}
+  .pcard:hover{box-shadow:var(--sh);border-color:var(--border-strong);transform:translateY(-2px)}
+  .pcard .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+  .folderico{width:42px;height:42px;border-radius:11px;background:var(--primary-soft);display:grid;place-items:center;color:var(--primary)}
+  .pcard h4{font-size:15px;font-weight:700;letter-spacing:-.01em}
+  .pcard .meta{font-size:12.5px;color:var(--text-2);margin-top:3px;display:flex;align-items:center;gap:6px}
+  .pcard .foot{display:flex;align-items:center;justify-content:space-between;margin-top:15px}
+  .stack{display:flex}
+  .stack .av{width:28px;height:28px;border-radius:8px;margin-left:-7px;border:2px solid var(--surface);font-size:11px}
+  .stack .av:first-child{margin-left:0}
+  .mini{font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:5px}
+
+  .pd-head{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;box-shadow:var(--sh-sm)}
+  .pd-head .row1{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+  .pd-head h1{font-size:21px;font-weight:700;letter-spacing:-.02em}
+  .pd-head .sub{display:flex;gap:18px;margin-top:12px;flex-wrap:wrap}
+  .pd-head .sub div{font-size:12.5px;color:var(--text-2);display:flex;align-items:center;gap:7px}
+  .pd-head .sub b{color:var(--text);font-weight:600}
+  .tabs{display:flex;gap:3px;border-bottom:1px solid var(--border);margin-bottom:18px;overflow:auto}
+  .tab{font-size:13.5px;font-weight:600;color:var(--text-2);padding:11px 15px;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+  .tab:hover{color:var(--text)}
+  .tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+  .pd-grid{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+
+  .composer{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--border);background:var(--surface)}
+  .composer .inp{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--text-3)}
+  .composer .send{width:40px;height:40px;border-radius:10px;background:var(--primary);color:#fff;display:grid;place-items:center}
+
+  .infocard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-sm);padding:16px 17px;margin-bottom:16px}
+  .infocard h4{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);font-weight:700;margin-bottom:12px}
+  .kv{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px solid var(--border)}
+  .kv:last-child{border-bottom:none}
+  .kv span{color:var(--text-2)} .kv b{font-weight:600}
+  .teamrow{display:flex;align-items:center;gap:10px;padding:8px 0}
+  .teamrow .nm{font-size:13px;font-weight:600}.teamrow .rl{font-size:11.5px;color:var(--text-3)}
+
+  .filegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+  .file{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh-sm);text-align:center}
+  .file .fi{width:46px;height:46px;border-radius:11px;margin:2px auto 11px;display:grid;place-items:center}
+  .file .fn{font-size:12.5px;font-weight:600;word-break:break-word}
+  .file .fs{font-size:11.5px;color:var(--text-3);margin-top:3px}
+
+  .kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+  .kcol{background:var(--surface-3);border-radius:var(--r);padding:13px}
+  .kcol .kh{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin-bottom:12px;padding:0 4px}
+  .kcol .kh .cnt{margin-left:auto;background:var(--surface);color:var(--text-2);font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .ktask{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px;box-shadow:var(--sh-sm);cursor:pointer}
+  .ktask:hover{box-shadow:var(--sh)}
+  .ktask .tt{font-size:13.5px;font-weight:600;margin-bottom:8px}
+  .ktask .tm{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+  .pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+
+  .tbl{width:100%;border-collapse:collapse;background:var(--surface)}
+  .tbl th{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);font-weight:700;text-align:left;padding:12px 18px;border-bottom:1px solid var(--border)}
+  .tbl td{font-size:13.5px;padding:13px 18px;border-bottom:1px solid var(--border)}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl .who{display:flex;align-items:center;gap:10px;font-weight:600}
+  .tbl .who .av{width:30px;height:30px;font-size:11px}
+
+  .formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+  .ftpl{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px;box-shadow:var(--sh-sm);transition:all .15s;cursor:pointer}
+  .ftpl:hover{box-shadow:var(--sh);transform:translateY(-2px);border-color:var(--border-strong)}
+  .ftpl .fi{width:44px;height:44px;border-radius:11px;background:var(--info-soft);color:var(--info);display:grid;place-items:center;margin-bottom:13px}
+  .ftpl h4{font-size:14.5px;font-weight:700}
+  .ftpl p{font-size:12.5px;color:var(--text-2);margin-top:5px;line-height:1.5}
+
+  /* =====================================================================
+     MOBILE (FIELD) APP
+  ===================================================================== */
+  .mobile-stage{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .mobile-intro{text-align:center;max-width:520px;margin:0 auto 4px}
+  .mobile-intro h2{font-size:18px;font-weight:700;letter-spacing:-.01em}
+  .mobile-intro p{font-size:13.5px;color:var(--text-2);margin-top:6px}
+  .phone{width:390px;max-width:94vw;height:800px;background:#000;border-radius:46px;padding:11px;box-shadow:var(--sh-lg);position:relative}
+  .screen-m{width:100%;height:100%;background:var(--surface-2);border-radius:36px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:140px;height:27px;background:#000;border-radius:0 0 18px 18px;z-index:20}
+  .statusbar{height:46px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 24px 5px;font-size:13px;font-weight:700;color:var(--text);flex-shrink:0;background:var(--surface)}
+  .statusbar.dark{color:#fff;background:var(--ink)}
+  .statusbar .r{display:flex;gap:6px;align-items:center}
+
+  .m-screen{flex:1;display:none;flex-direction:column;min-height:0}
+  .m-screen.active{display:flex}
+  .m-head{padding:8px 18px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+  .m-head.brand-head{background:var(--ink);border-bottom:none}
+  .m-head .htop{display:flex;align-items:center;justify-content:space-between}
+  .m-head .htop .ttl{font-size:21px;font-weight:800;letter-spacing:-.02em}
+  .brand-head .htop .ttl{color:#fff}
+  .m-head .htop .sub{font-size:12.5px;color:var(--text-3);margin-top:2px}
+  .brand-head .htop .sub{color:#9FB0C6}
+  .m-iconcirc{width:38px;height:38px;border-radius:11px;background:var(--surface-2);display:grid;place-items:center;color:var(--text-2)}
+  .brand-head .m-iconcirc{background:var(--ink-2);color:#fff}
+  .m-search{margin-top:13px;display:flex;align-items:center;gap:9px;background:var(--surface-2);border-radius:11px;padding:11px 13px;color:var(--text-3);font-size:13.5px}
+  .brand-head .m-search{background:var(--ink-2);color:#9FB0C6}
+  .m-body{flex:1;overflow:auto;padding:14px 16px 18px}
+  .m-body::-webkit-scrollbar{width:0}
+
+  /* mobile login */
+  .m-login{background:radial-gradient(120% 80% at 50% 0%,#1B2738 0%,#0E1726 70%);justify-content:flex-start}
+  .m-login .top{padding:40px 26px 8px;text-align:center;color:#fff}
+  .m-login .top .logo{width:60px;height:60px;border-radius:18px;background:var(--primary);display:grid;place-items:center;margin:0 auto 18px;box-shadow:0 10px 26px rgba(234,88,12,.4)}
+  .m-login .top h2{font-size:23px;font-weight:800;letter-spacing:-.02em}
+  .m-login .top p{font-size:13.5px;color:#9FB0C6;margin-top:7px}
+  .m-login .sheet{margin-top:auto;background:var(--surface);border-radius:28px 28px 0 0;padding:26px 22px 30px;flex:1;display:flex;flex-direction:column}
+  .m-login .sheet h3{font-size:17px;font-weight:700;margin-bottom:18px}
+  .m-login .mfield .ctrl{display:flex;align-items:center;gap:10px}
+  .m-login .mfield .ctrl svg{color:var(--text-3);flex-shrink:0}
+  .m-login .mfield .ctrl input{border:none;outline:none;background:none;font-size:14px;width:100%;color:var(--text)}
+
+  .mcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:var(--sh-sm)}
+  .mcard:active{transform:scale(.99)}
+  .mproj .mt{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .mproj h4{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+  .mproj .mc{font-size:12.5px;color:var(--text-3);margin-top:3px;display:flex;align-items:center;gap:6px}
+  .mproj .mb{display:flex;align-items:center;gap:12px;margin-top:13px;font-size:12px;color:var(--text-2)}
+  .mproj .mb span{display:flex;align-items:center;gap:5px}
+
+  .sectlabel{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:700;margin:6px 2px 11px}
+
+  .qa{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+  .qabtn{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 6px;display:flex;flex-direction:column;align-items:center;gap:7px;box-shadow:var(--sh-sm)}
+  .qabtn:active{transform:scale(.96);background:var(--surface-2)}
+  .qabtn .qi{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff}
+  .qabtn .ql{font-size:11px;font-weight:600;color:var(--text-2)}
+
+  .mfeed{display:flex;gap:11px;padding:12px 0;border-bottom:1px solid var(--border)}
+  .mfeed:last-child{border-bottom:none}
+  .mfeed .ft{font-size:13px;line-height:1.45}
+  .mfeed .ft b{font-weight:600}
+  .mfeed .fm{font-size:11.5px;color:var(--text-3);margin-top:3px}
+  .mphoto{width:100%;height:150px;border-radius:12px;margin-top:9px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#475569,#1E293B)}
+
+  .timer-wrap{text-align:center;padding:14px 0 8px}
+  .timer-ring{width:190px;height:190px;margin:6px auto 16px;border-radius:50%;display:grid;place-items:center;
+    background:conic-gradient(var(--primary) 0deg 156deg,var(--surface-3) 156deg 360deg);position:relative}
+  .timer-ring .inner{width:158px;height:158px;border-radius:50%;background:var(--surface);display:grid;place-items:center;box-shadow:var(--sh-sm)}
+  .timer-ring .t{font-size:34px;font-weight:800;letter-spacing:-.02em}
+  .timer-ring .s{font-size:12px;color:var(--text-3);margin-top:2px}
+  .bigbtn{width:100%;padding:15px;border-radius:14px;font-size:15px;font-weight:700;color:#fff;background:var(--danger);display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:var(--sh-sm)}
+  .bigbtn.start{background:var(--success)}
+  .bigbtn.primary{background:var(--primary)}
+  .tentry{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}
+  .tentry .ti{width:38px;height:38px;border-radius:10px;background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;flex-shrink:0}
+  .tentry .tx{flex:1}
+  .tentry .tn{font-size:13px;font-weight:600}
+  .tentry .tp{font-size:11.5px;color:var(--text-3);margin-top:1px}
+  .tentry .td{font-size:14px;font-weight:700}
+
+  .mfield{margin-bottom:15px}
+  .mfield label{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:7px}
+  .mfield .ctrl{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:13px;font-size:13.5px;color:var(--text)}
+  .mfield .ctrl.ph{color:var(--text-3)}
+  .seg{display:flex;gap:8px}
+  .seg .o{flex:1;text-align:center;padding:11px;border-radius:11px;border:1px solid var(--border);background:var(--surface);font-size:13px;font-weight:600;color:var(--text-2)}
+  .seg .o.sel{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+  .sign{height:120px;border:2px dashed var(--border-strong);border-radius:12px;display:grid;place-items:center;color:var(--text-3);font-size:13px;background:var(--surface);position:relative}
+  .sign .scribble{font-family:'Segoe Script','Brush Script MT',cursive;font-size:30px;color:var(--ink-2);font-style:italic;transform:rotate(-4deg)}
+
+  .m-tabbar{flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);
+    padding:9px 8px 22px}
+  .m-tab{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-3);font-size:10.5px;font-weight:600;padding:4px 0}
+  .m-tab.active{color:var(--primary)}
+  .m-tab .mi{width:24px;height:24px;display:grid;place-items:center}
+  .fab{position:absolute;right:18px;bottom:96px;width:56px;height:56px;border-radius:18px;background:var(--primary);color:#fff;
+    display:grid;place-items:center;box-shadow:0 8px 20px rgba(234,88,12,.45);z-index:15}
+  .fab:active{transform:scale(.94)}
+  .backbtn{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;color:var(--text-2);margin-bottom:2px}
+
+  .footnote{text-align:center;font-size:12px;color:var(--text-3);max-width:760px;margin:24px auto 6px;line-height:1.6}
+
+  @media(max-width:1080px){
+    .auth-web{grid-template-columns:1fr}.auth-brand{display:none}
+    .web-app{grid-template-columns:1fr}
+    .side{display:none}
+    .menubtn{display:grid}
+    .topbar .search{display:none}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .grid2,.pd-grid{grid-template-columns:1fr}
+    .pcards,.formgrid{grid-template-columns:repeat(2,1fr)}
+    .filegrid{grid-template-columns:repeat(2,1fr)}
+    .kanban{grid-template-columns:1fr}
+  }
+  @media(max-width:560px){
+    .stage{padding:10px}.kpis,.pcards,.formgrid{grid-template-columns:1fr}
+    .chrome{flex-wrap:wrap}.hint{display:none}.auth-form{padding:32px 24px}
+  }
+
+  /* ---------- Interactive: modal / toast / notifications ---------- */
+  .modal-back{position:fixed;inset:0;background:rgba(14,23,38,.5);backdrop-filter:blur(2px);display:none;place-items:center;z-index:200;padding:20px}
+  .modal-back.show{display:grid}
+  .modal{background:var(--surface);border-radius:16px;box-shadow:var(--sh-lg);width:100%;max-width:460px;max-height:88vh;overflow:auto;animation:pop .18s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+  .modal .mh{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface)}
+  .modal .mh h3{font-size:16px;font-weight:700}
+  .modal .mc{padding:18px}
+  .modal .mf{display:flex;gap:10px;justify-content:flex-end;padding:14px 18px;border-top:1px solid var(--border);background:var(--surface-2);position:sticky;bottom:0}
+  .modal label{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin:0 0 7px}
+  .modal input,.modal select,.modal textarea{width:100%;border:1px solid var(--border-strong);border-radius:10px;padding:11px 12px;font:inherit;font-size:13.5px;margin-bottom:15px;outline:none;color:var(--text);background:var(--surface)}
+  .modal input:focus,.modal select:focus,.modal textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .mclose{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--text-3)}
+  .mclose:hover{background:var(--surface-2)}
+  .nrow{display:flex;gap:11px;padding:11px 2px;border-bottom:1px solid var(--border)}
+  .nrow:last-child{border-bottom:none}
+  .nrow .nd{width:9px;height:9px;border-radius:50%;background:var(--primary);margin-top:5px;flex-shrink:0}
+  .nrow .nt{font-size:13.5px;font-weight:600}
+  .nrow .ns{font-size:12px;color:var(--text-3);margin-top:2px}
+  .planopt{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:11px;cursor:pointer;transition:all .15s}
+  .planopt:hover{border-color:var(--primary)}
+  .planopt.cur{border-color:var(--primary);background:var(--primary-soft)}
+  .planopt .pt{font-size:14px;font-weight:700;display:flex;justify-content:space-between;gap:10px}
+  .planopt .pp{font-size:12.5px;color:var(--text-2);margin-top:3px}
+  .addopt{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--border);border-radius:11px;margin-bottom:10px;cursor:pointer}
+  .addopt:hover{border-color:var(--primary);background:var(--surface-2)}
+  .addopt .ai{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:#fff;flex-shrink:0}
+  .toasts{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:300;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+  .toast{background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:11px 16px;border-radius:11px;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:9px;animation:tin .2s ease;max-width:90vw}
+  .toast .ic{color:#4ADE80;display:grid;place-items:center;flex-shrink:0}
+  @keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .check{cursor:pointer;user-select:none}
+  .check .box svg{opacity:0;transition:opacity .12s}
+  .check .box.on svg{opacity:1}
+  .field .toggle{cursor:pointer}
+  .link{cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- ============ TOP CHROME / MODE SWITCH ============ -->
+<div class="chrome">
+  <div class="brandmark">
+    <div class="logo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/></svg>
+    </div>
+    Baupilot <span class="tag">Demo</span>
+  </div>
+  <div class="modetabs" role="tablist" aria-label="Choose view">
+    <button id="modeWeb" class="active" onclick="setMode('web')" role="tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Office · Web
+    </button>
+    <button id="modeMobile" onclick="setMode('mobile')" role="tab">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M11 18h2"/></svg>
+      Field · Mobile
+    </button>
+  </div>
+  <div class="hint">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    Clickable — everything navigates
+  </div>
+</div>
+
+<div class="stage">
+
+<!-- ================================================================
+     WEB / OFFICE
+================================================================ -->
+<div id="webMode">
+
+  <!-- ===== WEB LOGIN ===== -->
+  <div id="web-login" class="auth-web">
+    <div class="auth-brand">
+      <div class="blogo"><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></div>Baupilot</div>
+      <h2>Run your job sites,<br><em>team and customers</em><br>from one place.</h2>
+      <div class="feats">
+        <div class="feat"><span class="fi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>Every project, plan and photo in one organized place.</div>
+        <div class="feat"><span class="fi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>Digital forms, signed on site — no more lost paperwork.</div>
+        <div class="feat"><span class="fi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.6"/><path d="M22 4 12 14l-3-3"/></svg></span>Office and field always in sync — even offline.</div>
+      </div>
+      <div class="quote">“We cut our paperwork in half and the office finally knows what's happening on every site.” — Field services company, 14 staff</div>
+    </div>
+    <div class="auth-form">
+      <h1>Sign in to your workspace</h1>
+      <p class="lead">Welcome back. Enter your details to continue.</p>
+      <div class="field">
+        <label>Work email</label>
+        <div class="inwrap">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
+          <input type="email" value="mark@hayeselectrical.com" aria-label="Work email">
+        </div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="inwrap">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" value="123456789" aria-label="Password">
+          <span class="toggle">Show</span>
+        </div>
+      </div>
+      <div class="rowbetween">
+        <span class="check"><span class="box on"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"><path d="M5 12l5 5L20 6"/></svg></span>Keep me signed in</span>
+        <span class="link">Forgot password?</span>
+      </div>
+      <button class="auth-btn" onclick="webLogin()">
+        Sign in
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <div class="divider">or</div>
+      <button class="ssobtn" onclick="webLogin()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
+        Continue with Microsoft
+      </button>
+      <div class="auth-foot">New to Baupilot? <a href="#" onclick="return false">Start a free trial</a></div>
+    </div>
+  </div>
+
+  <!-- ===== WEB APP ===== -->
+  <div class="web-app hidden">
+    <aside class="side">
+      <div class="brand">
+        <div class="logo"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></div>
+        Baupilot
+      </div>
+      <button class="newbtn" onclick="showWeb('projects')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        New Project
+      </button>
+      <div class="navlabel">Workspace</div>
+      <button class="navitem active" data-nav="dashboard" onclick="showWeb('dashboard')">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>
+        Dashboard
+      </button>
+      <button class="navitem" data-nav="projects" onclick="showWeb('projects')">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>
+        Projects
+      </button>
+      <button class="navitem" data-nav="tasks" onclick="showWeb('tasks')">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3 8 6 6.5 4.5"/><path d="M11 9l-3 3-1.5-1.5"/><path d="M11 15l-3 3-1.5-1.5"/><path d="M16 5h5M16 11h5M16 17h5"/></svg></span>
+        Tasks <span class="badge">7</span>
+      </button>
+      <button class="navitem" data-nav="time" onclick="showWeb('time')">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        Time Tracking
+      </button>
+      <button class="navitem" data-nav="forms" onclick="showWeb('forms')">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg></span>
+        Forms
+      </button>
+      <div class="navlabel">Manage</div>
+      <button class="navitem" data-nav="team" onclick="showWeb('team')">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        Team
+      </button>
+      <button class="navitem" data-nav="settings" onclick="showWeb('settings')">
+        <span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span>
+        Settings
+      </button>
+      <div class="spacer"></div>
+      <div class="me">
+        <div class="av">MH</div>
+        <div style="flex:1"><div class="nm">Mark Hayes</div><div class="ro">Owner · Hayes Electrical</div></div>
+        <button class="out" aria-label="Sign out" onclick="webLogout()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <button class="menubtn" aria-label="Open menu" onclick="toggleNav()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+        <div class="crumb" id="crumb">Workspace / <b>Dashboard</b></div>
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="Search projects, customers, tasks…">
+        </div>
+        <button class="iconbtn" aria-label="Notifications"><span class="dot"></span><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button>
+        <button class="iconbtn" aria-label="Help"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+      </div>
+
+      <div class="navmenu" id="navMenu">
+        <div class="navlabel2">Workspace</div>
+        <button class="nav-m active" data-nav="dashboard" onclick="navGo('dashboard')"><span class="mic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>Dashboard</button>
+        <button class="nav-m" data-nav="projects" onclick="navGo('projects')"><span class="mic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>Projects</button>
+        <button class="nav-m" data-nav="tasks" onclick="navGo('tasks')"><span class="mic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3 8 6 6.5 4.5"/><path d="M11 9l-3 3-1.5-1.5"/><path d="M11 15l-3 3-1.5-1.5"/><path d="M16 5h5M16 11h5M16 17h5"/></svg></span>Tasks <span class="badge">7</span></button>
+        <button class="nav-m" data-nav="time" onclick="navGo('time')"><span class="mic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Time Tracking</button>
+        <button class="nav-m" data-nav="forms" onclick="navGo('forms')"><span class="mic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h4"/></svg></span>Forms</button>
+        <div class="navlabel2">Manage</div>
+        <button class="nav-m" data-nav="team" onclick="navGo('team')"><span class="mic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Team</button>
+        <button class="nav-m" data-nav="settings" onclick="navGo('settings')"><span class="mic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span>Settings</button>
+        <div class="sep"></div>
+        <button class="nav-m danger" onclick="navOut()"><span class="mic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></span>Sign out</button>
+      </div>
+
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <section class="web-screen" id="web-dashboard">
+          <div class="pagehead">
+            <div><h1>Good morning, Mark</h1><p>Here's where your job sites stand — Thursday, June 25.</p></div>
+            <button class="btn btn-primary" onclick="showWeb('projects')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New Project
+            </button>
+          </div>
+
+          <div class="kpis">
+            <div class="kpi">
+              <div class="ic" style="background:var(--primary-soft);color:var(--primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div>
+              <div class="v tnum">12</div><div class="l">Active Projects</div>
+              <div class="tr up">▲ 2 this week</div>
+            </div>
+            <div class="kpi">
+              <div class="ic" style="background:var(--warning-soft);color:var(--warning)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+              <div class="v tnum">7</div><div class="l">Open Tasks</div>
+              <div class="tr down">3 overdue</div>
+            </div>
+            <div class="kpi">
+              <div class="ic" style="background:var(--info-soft);color:var(--info)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+              <div class="v tnum">186<span style="font-size:15px;font-weight:600">h</span></div><div class="l">Hours this week</div>
+              <div class="tr up">▲ 8% vs last week</div>
+            </div>
+            <div class="kpi">
+              <div class="ic" style="background:var(--success-soft);color:var(--success)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+              <div class="v tnum">4</div><div class="l">Forms to review</div>
+              <div class="tr">2 awaiting signature</div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="card">
+              <div class="ch"><h3>Recent Activity</h3><a href="#" onclick="return false">View all</a></div>
+              <div class="cb">
+                <div class="feed-row">
+                  <div class="av a3">TW</div>
+                  <div><div class="ft"><b>Tom Walker</b> uploaded 3 photos · <b>New Build — 12 Linden Street</b></div>
+                    <div class="fm"><span class="chiptype" style="background:var(--info-soft);color:var(--info)">Photo Doc</span> 14 min ago</div>
+                    <div class="photo-thumbs">
+                      <div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                      <div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                      <div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="feed-row">
+                  <div class="av a2">SL</div>
+                  <div><div class="ft"><b>Sarah Lewis</b> signed the report <b>“Weekly Report — Week 25"</b></div>
+                    <div class="fm"><span class="chiptype" style="background:var(--success-soft);color:var(--success)">Form signed</span> 1 hr ago</div></div>
+                </div>
+                <div class="feed-row">
+                  <div class="av a1">TW</div>
+                  <div><div class="ft"><b>Tom Walker</b> logged 6.5 hrs on <b>Corner Bakery Refit</b></div>
+                    <div class="fm"><span class="chiptype" style="background:var(--primary-soft);color:var(--primary)">Time</span> 2 hrs ago</div></div>
+                </div>
+                <div class="feed-row">
+                  <div class="av a4">MH</div>
+                  <div><div class="ft"><b>You</b> created the task <b>“Order materials — NYM-J cable"</b></div>
+                    <div class="fm"><span class="chiptype" style="background:var(--warning-soft);color:var(--warning)">Task</span> 3 hrs ago</div></div>
+                </div>
+                <div class="feed-row">
+                  <div class="av a5">AE</div>
+                  <div><div class="ft"><b>Apex Electric</b> (external) was invited to <b>New Build — 12 Linden Street</b></div>
+                    <div class="fm"><span class="chiptype" style="background:var(--surface-3);color:var(--text-2)">External company</span> yesterday</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="ch"><h3>Ongoing Projects</h3><a href="#" onclick="showWeb('projects');return false">All 12</a></div>
+              <div class="plist">
+                <div class="prow" onclick="openProject()">
+                  <div><div class="pn">New Build — 12 Linden Street</div><div class="pc">Southgate Developments · Riverside</div>
+                    <div class="progress"><i style="width:68%"></i></div></div>
+                  <span class="badge2 b-prog">In Progress</span>
+                </div>
+                <div class="prow" onclick="openProject()">
+                  <div><div class="pn">Corner Bakery Refit</div><div class="pc">Corner Bakery Ltd. · Oakford</div>
+                    <div class="progress"><i style="width:42%"></i></div></div>
+                  <span class="badge2 b-prog">In Progress</span>
+                </div>
+                <div class="prow" onclick="openProject()">
+                  <div><div class="pn">Office Building — 8 High Street</div><div class="pc">Miller Properties · Riverside</div>
+                    <div class="progress"><i style="width:15%"></i></div></div>
+                  <span class="badge2 b-plan">Planning</span>
+                </div>
+                <div class="prow" onclick="openProject()">
+                  <div><div class="pn">Eagle Hotel Maintenance</div><div class="pc">Eagle Hotel Group · Kingsford</div>
+                    <div class="progress"><i style="width:90%"></i></div></div>
+                  <span class="badge2 b-done">Handover</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROJECTS -->
+        <section class="web-screen hidden" id="web-projects">
+          <div class="pagehead">
+            <div><h1>Projects</h1><p>12 active projects across 4 folders.</p></div>
+            <button class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New Project</button>
+          </div>
+          <div class="toolbar">
+            <div class="chips">
+              <button class="chip active">All</button>
+              <button class="chip">In Progress</button>
+              <button class="chip">Planning</button>
+              <button class="chip">Handover</button>
+              <button class="chip">Archive</button>
+            </div>
+            <div style="margin-left:auto" class="chips">
+              <button class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px"><path d="M4 6h16M7 12h10M10 18h4"/></svg> Filter</button>
+              <button class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px"><path d="M3 6h18M3 12h18M3 18h18"/></svg> Sort</button>
+            </div>
+          </div>
+          <div class="pcards">
+            <div class="pcard" onclick="openProject()">
+              <div class="top"><div class="folderico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div><span class="badge2 b-prog">In Progress</span></div>
+              <h4>New Build — 12 Linden Street</h4><div class="meta">Southgate Developments · Riverside</div>
+              <div class="progress"><i style="width:68%"></i></div>
+              <div class="foot"><div class="stack"><div class="av a1">TW</div><div class="av a2">SL</div><div class="av a5">AE</div></div><div class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>34 files</div></div>
+            </div>
+            <div class="pcard" onclick="openProject()">
+              <div class="top"><div class="folderico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div><span class="badge2 b-prog">In Progress</span></div>
+              <h4>Corner Bakery Refit</h4><div class="meta">Corner Bakery Ltd. · Oakford</div>
+              <div class="progress"><i style="width:42%"></i></div>
+              <div class="foot"><div class="stack"><div class="av a3">TW</div><div class="av a4">JC</div></div><div class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>21 files</div></div>
+            </div>
+            <div class="pcard" onclick="openProject()">
+              <div class="top"><div class="folderico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div><span class="badge2 b-plan">Planning</span></div>
+              <h4>Office Building — 8 High Street</h4><div class="meta">Miller Properties · Riverside</div>
+              <div class="progress"><i style="width:15%"></i></div>
+              <div class="foot"><div class="stack"><div class="av a2">SL</div></div><div class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>9 files</div></div>
+            </div>
+            <div class="pcard" onclick="openProject()">
+              <div class="top"><div class="folderico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div><span class="badge2 b-done">Handover</span></div>
+              <h4>Eagle Hotel Maintenance</h4><div class="meta">Eagle Hotel Group · Kingsford</div>
+              <div class="progress"><i style="width:90%"></i></div>
+              <div class="foot"><div class="stack"><div class="av a1">TW</div><div class="av a3">JC</div></div><div class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>47 files</div></div>
+            </div>
+            <div class="pcard" onclick="openProject()">
+              <div class="top"><div class="folderico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div><span class="badge2 b-req">Inquiry</span></div>
+              <h4>Bennett Family Carport</h4><div class="meta">Private client · Fairview</div>
+              <div class="progress"><i style="width:5%"></i></div>
+              <div class="foot"><div class="stack"><div class="av a4">MH</div></div><div class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>3 files</div></div>
+            </div>
+            <div class="pcard" onclick="openProject()">
+              <div class="top"><div class="folderico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div><span class="badge2 b-prog">In Progress</span></div>
+              <h4>Roof Refurb — Maple Way</h4><div class="meta">Maple Way HOA · Westbrook</div>
+              <div class="progress"><i style="width:55%"></i></div>
+              <div class="foot"><div class="stack"><div class="av a2">SL</div><div class="av a1">TW</div><div class="av a3">JC</div></div><div class="mini"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>28 files</div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PROJECT DETAIL -->
+        <section class="web-screen hidden" id="web-project">
+          <button class="backbtn" style="margin-bottom:14px" onclick="showWeb('projects')">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to Projects
+          </button>
+          <div class="pd-head">
+            <div class="row1">
+              <div class="folderico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div>
+              <div><h1>New Build — 12 Linden Street</h1></div>
+              <span class="badge2 b-prog" style="font-size:12px">In Progress · 68%</span>
+              <div style="margin-left:auto;display:flex;gap:8px">
+                <button class="btn btn-ghost"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>Generate Report</button>
+                <button class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+              </div>
+            </div>
+            <div class="sub">
+              <div><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>12 Linden Street, Riverside</div>
+              <div><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Customer: <b>Southgate Developments</b></div>
+              <div><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Due: <b>Aug 15, 2026</b></div>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" data-tab="feed" onclick="showTab('feed')">Activity &amp; Chat</button>
+            <button class="tab" data-tab="files" onclick="showTab('files')">Files</button>
+            <button class="tab" data-tab="tasks" onclick="showTab('tasks')">Tasks</button>
+            <button class="tab" data-tab="forms" onclick="showTab('forms')">Forms</button>
+            <button class="tab" data-tab="time" onclick="showTab('time')">Time</button>
+          </div>
+
+          <div class="pd-grid">
+            <div>
+              <div class="tabpane" id="tab-feed">
+                <div class="card">
+                  <div class="cb" style="padding:6px 0">
+                    <div class="feed-row"><div class="av a3">TW</div><div>
+                      <div class="ft"><b>Tom Walker</b> · Electrician</div>
+                      <div class="ft" style="margin-top:3px">Ground floor wired, distribution board fitted. Photos attached. 👇</div>
+                      <div class="photo-thumbs">
+                        <div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                        <div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                      </div>
+                      <div class="fm">Today, 09:42</div></div>
+                    </div>
+                    <div class="feed-row"><div class="av a4">MH</div><div>
+                      <div class="ft"><b>You</b> · Owner</div>
+                      <div class="ft" style="margin-top:3px">Looks great. Please prep the first-floor board tomorrow — materials are in the workshop.</div>
+                      <div class="fm">Today, 10:05</div></div>
+                    </div>
+                    <div class="feed-row"><div class="av a2">SL</div><div>
+                      <div class="ft"><b>Sarah Lewis</b> uploaded a document</div>
+                      <div style="display:flex;align-items:center;gap:10px;margin-top:9px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;max-width:280px">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                        <div><div style="font-size:13px;font-weight:600">Floorplan_GF_rev2.pdf</div><div style="font-size:11.5px;color:var(--text-3)">2.4 MB</div></div>
+                      </div>
+                      <div class="fm">Today, 08:15</div></div>
+                    </div>
+                  </div>
+                  <div class="composer">
+                    <button class="iconbtn" aria-label="Attach"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+                    <div class="inp">Message the project team…</div>
+                    <button class="send" aria-label="Send"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tabpane hidden" id="tab-files">
+                <div class="chips" style="margin-bottom:15px">
+                  <button class="chip active">All files</button><button class="chip">Plans</button><button class="chip">Photos</button><button class="chip">Receipts</button>
+                </div>
+                <div class="filegrid">
+                  <div class="file"><div class="fi" style="background:var(--danger-soft);color:var(--danger)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="fn">Floorplan_GF_rev2.pdf</div><div class="fs">2.4 MB · today</div></div>
+                  <div class="file"><div class="fi" style="background:var(--info-soft);color:var(--info)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div><div class="fn">Board_GF.jpg</div><div class="fs">1.8 MB · today</div></div>
+                  <div class="file"><div class="fi" style="background:var(--info-soft);color:var(--info)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div><div class="fn">Site_Day3.jpg</div><div class="fs">2.1 MB · yesterday</div></div>
+                  <div class="file"><div class="fi" style="background:var(--warning-soft);color:var(--warning)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="fn">Delivery_Note.pdf</div><div class="fs">340 KB · yesterday</div></div>
+                  <div class="file"><div class="fi" style="background:var(--danger-soft);color:var(--danger)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div class="fn">Quote_2026-042.pdf</div><div class="fs">512 KB · Jun 20</div></div>
+                  <div class="file"><div class="fi" style="background:var(--info-soft);color:var(--info)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div><div class="fn">Before_Basement.jpg</div><div class="fs">1.5 MB · Jun 19</div></div>
+                </div>
+              </div>
+
+              <div class="tabpane hidden" id="tab-tasks">
+                <div class="card"><table class="tbl">
+                  <tr><td><div class="who"><span style="width:18px;height:18px;border:2px solid var(--border-strong);border-radius:6px;display:inline-block"></span> Fit first-floor board</div></td><td style="color:var(--text-3)">Tom W.</td><td><span class="pill b-prog">Tomorrow</span></td></tr>
+                  <tr><td><div class="who"><span style="width:18px;height:18px;border:2px solid var(--border-strong);border-radius:6px;display:inline-block"></span> Order materials — NYM-J cable</div></td><td style="color:var(--text-3)">You</td><td><span class="pill b-plan">This week</span></td></tr>
+                  <tr><td><div class="who"><span style="width:18px;height:18px;background:var(--success);border-radius:6px;display:grid;place-items:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"><path d="M5 12l5 5L20 6"/></svg></span> <span style="text-decoration:line-through;color:var(--text-3)">Wire ground floor</span></div></td><td style="color:var(--text-3)">Tom W.</td><td><span class="pill b-done">Done</span></td></tr>
+                  <tr><td><div class="who"><span style="width:18px;height:18px;border:2px solid var(--danger);border-radius:6px;display:inline-block"></span> Book handover with customer</div></td><td style="color:var(--text-3)">Sarah L.</td><td><span class="pill" style="background:var(--danger-soft);color:var(--danger)">Overdue</span></td></tr>
+                </table></div>
+              </div>
+
+              <div class="tabpane hidden" id="tab-forms">
+                <div class="card"><table class="tbl">
+                  <thead><tr><th>Form</th><th>Filed by</th><th>Status</th></tr></thead>
+                  <tr><td><div class="who"><span class="av a2">SL</span>Weekly Report — Week 25</div></td><td style="color:var(--text-2)">Sarah Lewis</td><td><span class="pill b-done">Signed</span></td></tr>
+                  <tr><td><div class="who"><span class="av a3">TW</span>Timesheet — Week 25</div></td><td style="color:var(--text-2)">Tom Walker</td><td><span class="pill b-prog">Open</span></td></tr>
+                  <tr><td><div class="who"><span class="av a4">MH</span>Handover Protocol — GF</div></td><td style="color:var(--text-2)">Draft</td><td><span class="pill b-req">Draft</span></td></tr>
+                </table></div>
+              </div>
+
+              <div class="tabpane hidden" id="tab-time">
+                <div class="card"><table class="tbl">
+                  <thead><tr><th>Staff</th><th>Task</th><th>Date</th><th style="text-align:right">Hours</th></tr></thead>
+                  <tr><td><div class="who"><span class="av a3">TW</span>Tom Walker</div></td><td style="color:var(--text-2)">Wire ground floor</td><td style="color:var(--text-3)">Jun 24</td><td style="text-align:right" class="tnum"><b>6.5 h</b></td></tr>
+                  <tr><td><div class="who"><span class="av a2">SL</span>Sarah Lewis</div></td><td style="color:var(--text-2)">Measure &amp; document</td><td style="color:var(--text-3)">Jun 24</td><td style="text-align:right" class="tnum"><b>3.0 h</b></td></tr>
+                  <tr><td><div class="who"><span class="av a3">TW</span>Tom Walker</div></td><td style="color:var(--text-2)">Prep distribution board</td><td style="color:var(--text-3)">Jun 23</td><td style="text-align:right" class="tnum"><b>8.0 h</b></td></tr>
+                  <tr><td colspan="3" style="font-weight:700">Total this week</td><td style="text-align:right" class="tnum"><b style="color:var(--primary)">42.5 h</b></td></tr>
+                </table></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="infocard">
+                <h4>Project Info</h4>
+                <div class="kv"><span>Status</span><b style="color:var(--info)">In Progress</b></div>
+                <div class="kv"><span>Contract value</span><b class="tnum">€48,500</b></div>
+                <div class="kv"><span>Start</span><b>Jun 2, 2026</b></div>
+                <div class="kv"><span>Due</span><b>Aug 15, 2026</b></div>
+                <div class="kv"><span>Available offline</span><b style="color:var(--success)">Yes</b></div>
+              </div>
+              <div class="infocard">
+                <h4>Team (4)</h4>
+                <div class="teamrow"><span class="av a4">MH</span><div><div class="nm">Mark Hayes</div><div class="rl">Owner</div></div></div>
+                <div class="teamrow"><span class="av a3">TW</span><div><div class="nm">Tom Walker</div><div class="rl">Electrician</div></div></div>
+                <div class="teamrow"><span class="av a2">SL</span><div><div class="nm">Sarah Lewis</div><div class="rl">Office / Project lead</div></div></div>
+                <div class="teamrow"><span class="av a5">AE</span><div><div class="nm">Apex Electric</div><div class="rl">External company</div></div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TASKS -->
+        <section class="web-screen hidden" id="web-tasks">
+          <div class="pagehead"><div><h1>Tasks</h1><p>All tasks across every project.</p></div>
+            <button class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New Task</button></div>
+          <div class="kanban">
+            <div class="kcol"><div class="kh"><span style="width:9px;height:9px;border-radius:50%;background:var(--text-3)"></span>To Do<span class="cnt">3</span></div>
+              <div class="ktask"><div class="tt">Order materials — NYM-J cable</div><div class="meta" style="font-size:12px;color:var(--text-3)">New Build — 12 Linden Street</div><div class="tm"><span class="pill b-plan">This week</span><span class="av a4" style="width:26px;height:26px;font-size:10px">MH</span></div></div>
+              <div class="ktask"><div class="tt">Check roof area measurements</div><div class="meta" style="font-size:12px;color:var(--text-3)">Roof Refurb — Maple Way</div><div class="tm"><span class="pill b-req">No date</span><span class="av a2" style="width:26px;height:26px;font-size:10px">SL</span></div></div>
+              <div class="ktask"><div class="tt">Follow up carport quote</div><div class="meta" style="font-size:12px;color:var(--text-3)">Bennett Family Carport</div><div class="tm"><span class="pill b-plan">Fri</span><span class="av a4" style="width:26px;height:26px;font-size:10px">MH</span></div></div>
+            </div>
+            <div class="kcol"><div class="kh"><span style="width:9px;height:9px;border-radius:50%;background:var(--info)"></span>In Progress<span class="cnt">2</span></div>
+              <div class="ktask"><div class="tt">Fit first-floor board</div><div class="meta" style="font-size:12px;color:var(--text-3)">New Build — 12 Linden Street</div><div class="tm"><span class="pill b-prog">Tomorrow</span><span class="av a3" style="width:26px;height:26px;font-size:10px">TW</span></div></div>
+              <div class="ktask"><div class="tt">Tile bakery floor</div><div class="meta" style="font-size:12px;color:var(--text-3)">Corner Bakery Refit</div><div class="tm"><span class="pill b-prog">Active</span><span class="av a4" style="width:26px;height:26px;font-size:10px">JC</span></div></div>
+            </div>
+            <div class="kcol"><div class="kh"><span style="width:9px;height:9px;border-radius:50%;background:var(--success)"></span>Done<span class="cnt">2</span></div>
+              <div class="ktask" style="opacity:.7"><div class="tt" style="text-decoration:line-through">Wire ground floor</div><div class="meta" style="font-size:12px;color:var(--text-3)">New Build — 12 Linden Street</div><div class="tm"><span class="pill b-done">Done</span><span class="av a3" style="width:26px;height:26px;font-size:10px">TW</span></div></div>
+              <div class="ktask" style="opacity:.7"><div class="tt" style="text-decoration:line-through">Arrange site power</div><div class="meta" style="font-size:12px;color:var(--text-3)">Office Building — 8 High Street</div><div class="tm"><span class="pill b-done">Done</span><span class="av a2" style="width:26px;height:26px;font-size:10px">SL</span></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TIME -->
+        <section class="web-screen hidden" id="web-time">
+          <div class="pagehead"><div><h1>Time Tracking</h1><p>Logged working hours — Week 25 (Jun 16–22).</p></div>
+            <button class="btn btn-ghost"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export (CSV / Accounting)</button></div>
+          <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+            <div class="kpi"><div class="ic" style="background:var(--primary-soft);color:var(--primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="v tnum">186 h</div><div class="l">Total this week</div></div>
+            <div class="kpi"><div class="ic" style="background:var(--info-soft);color:var(--info)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="v tnum">5</div><div class="l">Staff active</div></div>
+            <div class="kpi"><div class="ic" style="background:var(--success-soft);color:var(--success)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></div><div class="v tnum">37.2 h</div><div class="l">Avg per person</div></div>
+          </div>
+          <div class="card"><table class="tbl">
+            <thead><tr><th>Staff</th><th>Project</th><th>Task</th><th>Date</th><th style="text-align:right">Hours</th></tr></thead>
+            <tr><td><div class="who"><span class="av a3">TW</span>Tom Walker</div></td><td style="color:var(--text-2)">New Build — 12 Linden Street</td><td style="color:var(--text-3)">Wire ground floor</td><td style="color:var(--text-3)">Jun 24</td><td style="text-align:right" class="tnum"><b>6.5 h</b></td></tr>
+            <tr><td><div class="who"><span class="av a2">SL</span>Sarah Lewis</div></td><td style="color:var(--text-2)">New Build — 12 Linden Street</td><td style="color:var(--text-3)">Measure &amp; document</td><td style="color:var(--text-3)">Jun 24</td><td style="text-align:right" class="tnum"><b>3.0 h</b></td></tr>
+            <tr><td><div class="who"><span class="av a4">JC</span>Jake Carter</div></td><td style="color:var(--text-2)">Corner Bakery Refit</td><td style="color:var(--text-3)">Tile floor</td><td style="color:var(--text-3)">Jun 24</td><td style="text-align:right" class="tnum"><b>7.5 h</b></td></tr>
+            <tr><td><div class="who"><span class="av a3">TW</span>Tom Walker</div></td><td style="color:var(--text-2)">New Build — 12 Linden Street</td><td style="color:var(--text-3)">Prep board</td><td style="color:var(--text-3)">Jun 23</td><td style="text-align:right" class="tnum"><b>8.0 h</b></td></tr>
+            <tr><td><div class="who"><span class="av a2">SL</span>Sarah Lewis</div></td><td style="color:var(--text-2)">Office Building — 8 High Street</td><td style="color:var(--text-3)">Planning</td><td style="color:var(--text-3)">Jun 23</td><td style="text-align:right" class="tnum"><b>4.0 h</b></td></tr>
+          </table></div>
+        </section>
+
+        <!-- FORMS -->
+        <section class="web-screen hidden" id="web-forms">
+          <div class="pagehead"><div><h1>Forms</h1><p>Digital templates — fillable and signable on site.</p></div>
+            <button class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New Template</button></div>
+          <div class="formgrid">
+            <div class="ftpl"><div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h4>Timesheet</h4><p>Capture working hours per person and day.</p></div>
+            <div class="ftpl"><div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><h4>Handover Protocol</h4><p>Document handover and collect the customer's signature.</p></div>
+            <div class="ftpl"><div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div><h4>Daily Report</h4><p>Day's report with photos, materials and notes.</p></div>
+            <div class="ftpl"><div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></div><h4>Safety Inspection</h4><p>Checklist for site health &amp; safety.</p></div>
+            <div class="ftpl"><div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></div><h4>Measurement Sheet</h4><p>Capture measurements on site and auto-calculate.</p></div>
+            <div class="ftpl"><div class="fi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9M14 17H5M17 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM7 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg></div><h4>Snag / Defect List</h4><p>Log defects with photo and location.</p></div>
+          </div>
+        </section>
+
+        <!-- TEAM -->
+        <section class="web-screen hidden" id="web-team">
+          <div class="pagehead"><div><h1>Team</h1><p>5 members · roles &amp; permissions.</p></div>
+            <button class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Invite member</button></div>
+          <div class="card"><table class="tbl">
+            <thead><tr><th>Name</th><th>Role</th><th>Primary device</th><th>Access</th></tr></thead>
+            <tr><td><div class="who"><span class="av a4">MH</span>Mark Hayes</div></td><td>Owner / Admin</td><td style="color:var(--text-2)">Web</td><td><span class="pill b-done">Full</span></td></tr>
+            <tr><td><div class="who"><span class="av a2">SL</span>Sarah Lewis</div></td><td>Office / Project lead</td><td style="color:var(--text-2)">Web</td><td><span class="pill b-prog">Manage</span></td></tr>
+            <tr><td><div class="who"><span class="av a3">TW</span>Tom Walker</div></td><td>Electrician</td><td style="color:var(--text-2)">Mobile</td><td><span class="pill b-plan">Field</span></td></tr>
+            <tr><td><div class="who"><span class="av a1">JC</span>Jake Carter</div></td><td>Field worker</td><td style="color:var(--text-2)">Mobile</td><td><span class="pill b-plan">Field</span></td></tr>
+            <tr><td><div class="who"><span class="av a5">AE</span>Apex Electric</div></td><td>External company</td><td style="color:var(--text-2)">Mobile / Web</td><td><span class="pill b-req">1 project</span></td></tr>
+          </table></div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="web-screen hidden" id="web-settings">
+          <div class="pagehead"><div><h1>Settings</h1><p>Company, plan and integrations.</p></div></div>
+          <div class="grid2">
+            <div class="infocard"><h4>Subscription</h4>
+              <div class="kv"><span>Plan</span><b>Professional</b></div>
+              <div class="kv"><span>Users</span><b class="tnum">5 of 10</b></div>
+              <div class="kv"><span>Price</span><b class="tnum">€29 / user / month</b></div>
+              <div class="kv"><span>Next billing</span><b>Jul 1, 2026</b></div>
+              <button class="btn btn-primary" style="margin-top:14px;width:100%;justify-content:center">Manage plan</button>
+            </div>
+            <div class="infocard"><h4>Integrations</h4>
+              <div class="teamrow" style="border-bottom:1px solid var(--border)"><span class="folderico" style="width:36px;height:36px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></span><div style="flex:1"><div class="nm">Trade Software (API)</div><div class="rl">Connected</div></div><span class="pill b-done">Active</span></div>
+              <div class="teamrow" style="border-bottom:1px solid var(--border)"><span class="folderico" style="width:36px;height:36px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></span><div style="flex:1"><div class="nm">Accounting Export</div><div class="rl">Bookkeeping</div></div><span class="pill b-done">Active</span></div>
+              <div class="teamrow"><span class="folderico" style="width:36px;height:36px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><div style="flex:1"><div class="nm">Calendar Sync</div><div class="rl">Not connected</div></div><span class="pill b-req">Off</span></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     MOBILE / FIELD
+================================================================ -->
+<div id="mobileMode" class="hidden">
+  <div class="mobile-stage">
+    <div class="mobile-intro">
+      <h2>The field app for your crew</h2>
+      <p>Same data as the office — built for on-site use: sign in, document, track time, and complete forms. Works offline too.</p>
+    </div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen-m">
+
+        <div class="statusbar dark" id="m-statusbar"><span class="tnum">9:41</span><span class="r"><svg width="17" height="11" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="3" width="3" height="6" rx="1"/><rect x="4" y="1.5" width="3" height="9" rx="1"/><rect x="8" y="0" width="3" height="11" rx="1"/><rect x="12" y="2.5" width="3" height="8" rx="1" opacity=".4"/></svg><svg width="22" height="11" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1" y="1" width="19" height="10" rx="2.5"/><rect x="2.5" y="2.5" width="13" height="7" rx="1" fill="currentColor" stroke="none"/><rect x="21" y="4" width="2" height="4" rx="1" fill="currentColor" stroke="none"/></svg></span></div>
+
+        <!-- M: LOGIN -->
+        <div class="m-screen active m-login" id="m-login">
+          <div class="top">
+            <div class="logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg></div>
+            <h2>Welcome back</h2>
+            <p>Sign in to your job sites</p>
+          </div>
+          <div class="sheet">
+            <h3>Sign in</h3>
+            <div class="mfield"><label>Work email</label>
+              <div class="ctrl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg><input type="email" value="tom@hayeselectrical.com" aria-label="Work email"></div></div>
+            <div class="mfield"><label>Password</label>
+              <div class="ctrl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" value="123456789" aria-label="Password"></div></div>
+            <div class="rowbetween" style="margin:2px 2px 18px"><span class="check"><span class="box on"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"><path d="M5 12l5 5L20 6"/></svg></span>Stay signed in</span><span class="link">Forgot?</span></div>
+            <button class="bigbtn primary" onclick="mobileLogin()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Sign in</button>
+            <div style="text-align:center;margin-top:16px;font-size:12.5px;color:var(--text-3)">Offline mode available once signed in</div>
+          </div>
+        </div>
+
+        <!-- M: PROJECTS -->
+        <div class="m-screen" id="m-projects">
+          <div class="m-head brand-head">
+            <div class="htop"><div><div class="ttl">My Projects</div><div class="sub">Tom Walker · Electrician</div></div>
+              <button class="m-iconcirc" aria-label="Notifications"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></button></div>
+            <div class="m-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Search projects…</div>
+          </div>
+          <div class="m-body">
+            <div class="sectlabel">Assigned today</div>
+            <div class="mcard mproj" onclick="showM('project')">
+              <div class="mt"><div><h4>New Build — 12 Linden St</h4><div class="mc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Riverside · 1.5 mi</div></div><span class="badge2 b-prog">Active</span></div>
+              <div class="progress"><i style="width:68%"></i></div>
+              <div class="mb"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>4 on team</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>2 tasks</span><span style="color:var(--success);margin-left:auto"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.6"/><path d="M22 4 12 14.01l-3-3"/></svg>Offline ready</span></div>
+            </div>
+            <div class="mcard mproj" onclick="showM('project')">
+              <div class="mt"><div><h4>Corner Bakery Refit</h4><div class="mc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Oakford · 7 mi</div></div><span class="badge2 b-prog">Active</span></div>
+              <div class="progress"><i style="width:42%"></i></div>
+              <div class="mb"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>2 on team</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>1 task</span></div>
+            </div>
+            <div class="sectlabel" style="margin-top:14px">Other</div>
+            <div class="mcard mproj" onclick="showM('project')">
+              <div class="mt"><div><h4>Eagle Hotel Maintenance</h4><div class="mc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Kingsford · 11 mi</div></div><span class="badge2 b-done">Handover</span></div>
+            </div>
+          </div>
+          <div class="m-tabbar">
+            <button class="m-tab active" onclick="showM('projects')"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>Projects</button>
+            <button class="m-tab" onclick="showM('project')"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Tasks</button>
+            <button class="m-tab" onclick="showM('time')"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Time</button>
+            <button class="m-tab" onclick="mobileLogout()"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg></span>Profile</button>
+          </div>
+        </div>
+
+        <!-- M: PROJECT -->
+        <div class="m-screen" id="m-project">
+          <div class="m-head">
+            <button class="backbtn" onclick="showM('projects')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Projects</button>
+            <div class="htop" style="margin-top:6px"><div><div class="ttl" style="font-size:18px">12 Linden Street</div><div class="sub">Southgate Dev. · Riverside</div></div><span class="badge2 b-prog">68%</span></div>
+          </div>
+          <div class="m-body">
+            <div class="qa">
+              <button class="qabtn" onclick="showM('camera')"><span class="qi" style="background:var(--info)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg></span><span class="ql">Photo</span></button>
+              <button class="qabtn" onclick="showM('form')"><span class="qi" style="background:var(--success)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></span><span class="ql">Form</span></button>
+              <button class="qabtn" onclick="showM('time')"><span class="qi" style="background:var(--primary)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="ql">Time</span></button>
+              <button class="qabtn" onclick="showM('camera')"><span class="qi" style="background:var(--ink-3)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg></span><span class="ql">Scan</span></button>
+            </div>
+            <div class="sectlabel">Project activity</div>
+            <div class="mcard" style="padding:4px 15px">
+              <div class="mfeed"><div class="av a3" style="width:34px;height:34px">TW</div><div style="flex:1"><div class="ft"><b>You</b> added photos</div>
+                <div class="mphoto"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>
+                <div class="fm">Today, 09:42 · synced</div></div></div>
+              <div class="mfeed"><div class="av a4" style="width:34px;height:34px">MH</div><div style="flex:1"><div class="ft"><b>Mark H.:</b> Looks great. Please prep the first-floor board tomorrow.</div><div class="fm">Today, 10:05</div></div></div>
+              <div class="mfeed"><div class="av a2" style="width:34px;height:34px">SL</div><div style="flex:1"><div class="ft"><b>Sarah L.</b> shared <b>Floorplan_GF_rev2.pdf</b></div><div class="fm">Today, 08:15</div></div></div>
+            </div>
+          </div>
+          <button class="fab" onclick="showM('camera')" aria-label="Add"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+          <div class="m-tabbar">
+            <button class="m-tab" onclick="showM('projects')"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>Projects</button>
+            <button class="m-tab active" onclick="showM('project')"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Tasks</button>
+            <button class="m-tab" onclick="showM('time')"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Time</button>
+            <button class="m-tab" onclick="mobileLogout()"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg></span>Profile</button>
+          </div>
+        </div>
+
+        <!-- M: TIME -->
+        <div class="m-screen" id="m-time">
+          <div class="m-head">
+            <button class="backbtn" onclick="showM('project')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
+            <div class="htop" style="margin-top:6px"><div class="ttl" style="font-size:19px">Time Tracking</div></div>
+          </div>
+          <div class="m-body">
+            <div class="mcard" style="text-align:center">
+              <div class="timer-wrap">
+                <div class="mc" style="justify-content:center;color:var(--text-3);font-size:12.5px;margin-bottom:2px">Running · 12 Linden St · Wire ground floor</div>
+                <div class="timer-ring"><div class="inner"><div><div class="t tnum">02:34</div><div class="s">since 07:07</div></div></div></div>
+                <button class="bigbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>Stop timer</button>
+              </div>
+            </div>
+            <div class="sectlabel">Logged today</div>
+            <div class="mcard" style="padding:4px 15px">
+              <div class="tentry"><div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div><div class="tx"><div class="tn">12 Linden Street</div><div class="tp">Wire ground floor · running</div></div><div class="td tnum">2.5 h</div></div>
+              <div class="tentry"><div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></div><div class="tx"><div class="tn">Corner Bakery</div><div class="tp">Travel &amp; measure</div></div><div class="td tnum">1.5 h</div></div>
+            </div>
+          </div>
+          <div class="m-tabbar">
+            <button class="m-tab" onclick="showM('projects')"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></span>Projects</button>
+            <button class="m-tab" onclick="showM('project')"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Tasks</button>
+            <button class="m-tab active" onclick="showM('time')"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Time</button>
+            <button class="m-tab" onclick="mobileLogout()"><span class="mi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/></svg></span>Profile</button>
+          </div>
+        </div>
+
+        <!-- M: FORM -->
+        <div class="m-screen" id="m-form">
+          <div class="m-head">
+            <button class="backbtn" onclick="showM('project')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Cancel</button>
+            <div class="htop" style="margin-top:6px"><div class="ttl" style="font-size:19px">Daily Report</div></div>
+          </div>
+          <div class="m-body">
+            <div class="mfield"><label>Project</label><div class="ctrl">New Build — 12 Linden Street</div></div>
+            <div class="mfield"><label>Date</label><div class="ctrl">June 25, 2026</div></div>
+            <div class="mfield"><label>Work carried out</label><div class="ctrl ph" style="min-height:70px">Ground floor fully wired, distribution board fitted and labelled…</div></div>
+            <div class="mfield"><label>Weather / conditions</label>
+              <div class="seg"><div class="o sel">Sunny</div><div class="o">Cloudy</div><div class="o">Rain</div></div></div>
+            <div class="mfield"><label>Attach photo</label>
+              <div class="ctrl" style="display:flex;align-items:center;gap:10px;color:var(--text-3)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg>2 photos added</div></div>
+            <div class="mfield"><label>Customer signature</label>
+              <div class="sign"><span class="scribble">J. Miller</span></div></div>
+            <button class="bigbtn start" style="margin-top:4px" onclick="showM('project')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Submit &amp; sign report</button>
+          </div>
+        </div>
+
+        <!-- M: CAMERA -->
+        <div class="m-screen" id="m-camera">
+          <div class="m-head" style="background:#000;border:none">
+            <button class="backbtn" style="color:#fff" onclick="showM('project')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back</button>
+          </div>
+          <div class="m-body" style="background:#0B0F16;display:flex;flex-direction:column;padding:0">
+            <div style="flex:1;display:grid;place-items:center;color:#3A4658;position:relative;background:repeating-linear-gradient(45deg,#0E141D,#0E141D 14px,#10171F 14px,#10171F 28px)">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+              <div style="position:absolute;top:16px;left:16px;background:rgba(234,88,12,.95);color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px">● Photo Doc · 12 Linden Street</div>
+              <div style="position:absolute;bottom:16px;left:16px;right:16px;display:flex;gap:8px">
+                <div style="background:rgba(255,255,255,.12);color:#fff;font-size:11.5px;padding:7px 11px;border-radius:8px;backdrop-filter:blur(4px)">✏ Markup</div>
+                <div style="background:rgba(255,255,255,.12);color:#fff;font-size:11.5px;padding:7px 11px;border-radius:8px;backdrop-filter:blur(4px)">↗ Arrow</div>
+                <div style="background:rgba(255,255,255,.12);color:#fff;font-size:11.5px;padding:7px 11px;border-radius:8px;backdrop-filter:blur(4px)">T Note</div>
+              </div>
+            </div>
+            <div style="background:#000;padding:18px 0 26px;display:flex;align-items:center;justify-content:center;gap:40px">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+              <button onclick="showM('form')" aria-label="Capture" style="width:68px;height:68px;border-radius:50%;background:#fff;border:5px solid #3A4658"></button>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="mobile-intro" style="margin-top:6px">
+      <p style="font-size:12.5px;color:var(--text-3)">Sign in, then tap the quick actions (Photo, Form, Time, Scan), the cards, or the bottom navigation to click through. Tap Profile to return to the login screen.</p>
+    </div>
+  </div>
+</div>
+
+<div class="footnote">
+  <b>Baupilot</b> is a placeholder brand name for this demo — the name, logo and colors are fully customizable.
+  This demo covers the Phase 1 scope: login &amp; roles, projects &amp; folders, documentation, forms with signature, tasks, time tracking, chat, and offline sync.
+</div>
+
+</div><!-- /stage -->
+
+<script>
+  function setMode(mode){
+    var web = document.getElementById('webMode');
+    var mob = document.getElementById('mobileMode');
+    document.getElementById('modeWeb').classList.toggle('active', mode==='web');
+    document.getElementById('modeMobile').classList.toggle('active', mode==='mobile');
+    web.classList.toggle('hidden', mode!=='web');
+    mob.classList.toggle('hidden', mode!=='mobile');
+    if(mode==='web'){ webLogout(); } else { mobileLogout(); }
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  /* ---- WEB auth ---- */
+  function webLogin(){
+    document.getElementById('web-login').classList.add('hidden');
+    document.querySelector('.web-app').classList.remove('hidden');
+    showWeb('dashboard');
+  }
+  function webLogout(){
+    document.querySelector('.web-app').classList.add('hidden');
+    document.getElementById('web-login').classList.remove('hidden');
+  }
+
+  var crumbs = {
+    dashboard:'Workspace / <b>Dashboard</b>',
+    projects:'Workspace / <b>Projects</b>',
+    project:'Projects / <b>New Build — 12 Linden Street</b>',
+    tasks:'Workspace / <b>Tasks</b>',
+    time:'Workspace / <b>Time Tracking</b>',
+    forms:'Workspace / <b>Forms</b>',
+    team:'Manage / <b>Team</b>',
+    settings:'Manage / <b>Settings</b>'
+  };
+  function showWeb(screen){
+    document.querySelectorAll('.web-screen').forEach(function(s){s.classList.add('hidden')});
+    var el = document.getElementById('web-'+screen);
+    if(el) el.classList.remove('hidden');
+    document.querySelectorAll('.navitem').forEach(function(n){
+      n.classList.toggle('active', n.getAttribute('data-nav')===screen);
+    });
+    document.getElementById('crumb').innerHTML = crumbs[screen] || crumbs.dashboard;
+    var c = document.querySelector('.content'); if(c) c.scrollTop = 0;
+  }
+  function openProject(){ showWeb('project'); showTab('feed'); }
+
+  /* mobile dropdown nav (office web app) */
+  function toggleNav(){ var m=document.getElementById('navMenu'); if(m) m.classList.toggle('show'); }
+  function closeNav(){ var m=document.getElementById('navMenu'); if(m) m.classList.remove('show'); }
+  function navGo(s){
+    showWeb(s);
+    document.querySelectorAll('#navMenu .nav-m').forEach(function(n){ n.classList.toggle('active', n.getAttribute('data-nav')===s); });
+    closeNav();
+  }
+  function navOut(){ closeNav(); webLogout(); }
+  document.addEventListener('click', function(e){
+    var menu=document.getElementById('navMenu'); if(!menu || !menu.classList.contains('show')) return;
+    var btn=document.querySelector('.menubtn');
+    if(menu.contains(e.target) || (btn && btn.contains(e.target))) return;
+    menu.classList.remove('show');
+  });
+  function showTab(name){
+    document.querySelectorAll('#web-project .tab').forEach(function(t){
+      t.classList.toggle('active', t.getAttribute('data-tab')===name);
+    });
+    document.querySelectorAll('#web-project .tabpane').forEach(function(p){p.classList.add('hidden')});
+    var pane = document.getElementById('tab-'+name);
+    if(pane) pane.classList.remove('hidden');
+  }
+
+  /* ---- MOBILE auth + nav ---- */
+  function mobileLogin(){ showM('projects'); }
+  function mobileLogout(){ showM('login'); }
+  function showM(screen){
+    document.querySelectorAll('.m-screen').forEach(function(s){s.classList.remove('active')});
+    var el = document.getElementById('m-'+screen);
+    if(el){ el.classList.add('active'); var b=el.querySelector('.m-body'); if(b) b.scrollTop=0; }
+    // status bar contrast: dark text normally, white text on dark headers (login/camera)
+    var bar = document.getElementById('m-statusbar');
+    var darkTop = (screen==='login' || screen==='projects' || screen==='camera');
+    bar.classList.toggle('dark', darkTop);
+  }
+</script>
+
+<script>
+/* ============ INTERACTIVITY LAYER — makes every control respond ============ */
+(function(){
+  function esc(s){return String(s).replace(/[&<>"']/g,function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]);});}
+  function on(el,fn){ if(el) el.addEventListener('click',fn); }
+  function exact(t){return Array.prototype.slice.call(document.querySelectorAll('button')).filter(function(b){return b.textContent.trim().toLowerCase()===t.toLowerCase();});}
+  function has(t){return Array.prototype.slice.call(document.querySelectorAll('button')).filter(function(b){return b.textContent.trim().toLowerCase().indexOf(t.toLowerCase())>=0;});}
+
+  /* ---- toast ---- */
+  var tw;
+  window.toast=function(msg){
+    if(!tw){tw=document.createElement('div');tw.className='toasts';document.body.appendChild(tw);}
+    var t=document.createElement('div');t.className='toast';
+    t.innerHTML='<span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>'+esc(msg);
+    tw.appendChild(t);
+    setTimeout(function(){t.style.transition='opacity .3s';t.style.opacity='0';setTimeout(function(){t.remove();},300);},2300);
+  };
+
+  /* ---- modal ---- */
+  var mb, X='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+  function ensure(){ if(mb)return; mb=document.createElement('div');mb.className='modal-back';mb.innerHTML='<div class="modal" id="__m"></div>';mb.addEventListener('click',function(e){if(e.target===mb)closeModal();});document.body.appendChild(mb);}
+  window.openModal=function(title,body,foot){
+    ensure(); var m=mb.querySelector('#__m');
+    m.innerHTML='<div class="mh"><h3>'+title+'</h3><button class="mclose" aria-label="Close">'+X+'</button></div><div class="mc">'+body+'</div>'+(foot?'<div class="mf">'+foot+'</div>':'');
+    on(m.querySelector('.mclose'),closeModal); mb.classList.add('show'); return m;
+  };
+  window.closeModal=function(){ if(mb)mb.classList.remove('show'); };
+
+  var FOLDER='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>';
+  function smeta(s){s=s.toLowerCase(); if(s.indexOf('progress')>=0)return['b-prog','In Progress']; if(s.indexOf('plan')>=0)return['b-plan','Planning']; if(s.indexOf('hand')>=0)return['b-done','Handover']; return['b-req','Inquiry'];}
+
+  /* ===== New Project ===== */
+  function newProject(){
+    var m=openModal('New Project',
+      '<label>Project name</label><input id="np1" placeholder="e.g. Loft conversion — 5 Oak Road">'+
+      '<label>Customer</label><input id="np2" placeholder="Customer or company">'+
+      '<label>Site address</label><input id="np3" placeholder="Street, town">'+
+      '<label>Status</label><select id="np4"><option>Planning</option><option>In Progress</option><option>Inquiry</option><option>Handover</option></select>',
+      '<button class="btn btn-ghost" id="npc">Cancel</button><button class="btn btn-primary" id="npk">Create project</button>');
+    on(m.querySelector('#npc'),closeModal);
+    on(m.querySelector('#npk'),function(){
+      var name=(m.querySelector('#np1').value||'').trim()||'Untitled Project';
+      var cust=(m.querySelector('#np2').value||'').trim()||'New customer';
+      var meta=smeta(m.querySelector('#np4').value);
+      var grid=document.querySelector('#web-projects .pcards');
+      if(grid){var c=document.createElement('div');c.className='pcard';c.setAttribute('onclick','openProject()');
+        c.innerHTML='<div class="top"><div class="folderico">'+FOLDER+'</div><span class="badge2 '+meta[0]+'">'+meta[1]+'</span></div><h4>'+esc(name)+'</h4><div class="meta">'+esc(cust)+' · new</div><div class="progress"><i style="width:4%"></i></div><div class="foot"><div class="stack"><div class="av a4">MH</div></div><div class="mini">just created</div></div>';
+        grid.insertBefore(c,grid.firstChild);}
+      closeModal(); showWeb('projects'); toast('Project \u201C'+name+'\u201D created');
+    });
+  }
+  exact('New Project').forEach(function(b){on(b,newProject);});
+
+  /* ===== New Task ===== */
+  function newTask(){
+    var m=openModal('New Task',
+      '<label>Task</label><input id="nt1" placeholder="e.g. Fit kitchen sockets">'+
+      '<label>Project</label><input id="nt2" value="New Build — 12 Linden Street">'+
+      '<label>Due</label><select id="nt3"><option>Today</option><option>Tomorrow</option><option>This week</option><option>No date</option></select>',
+      '<button class="btn btn-ghost" id="ntc">Cancel</button><button class="btn btn-primary" id="ntk">Add task</button>');
+    on(m.querySelector('#ntc'),closeModal);
+    on(m.querySelector('#ntk'),function(){
+      var title=(m.querySelector('#nt1').value||'').trim()||'Untitled task';
+      var proj=(m.querySelector('#nt2').value||'').trim()||'—';
+      var due=m.querySelector('#nt3').value;
+      var col=document.querySelector('#web-tasks .kcol');
+      if(col){var t=document.createElement('div');t.className='ktask';
+        t.innerHTML='<div class="tt">'+esc(title)+'</div><div class="meta" style="font-size:12px;color:var(--text-3)">'+esc(proj)+'</div><div class="tm"><span class="pill b-plan">'+esc(due)+'</span><span class="av a4" style="width:26px;height:26px;font-size:10px">MH</span></div>';
+        t.style.cursor='pointer';
+        col.insertBefore(t,col.children[1]||null);
+        var cnt=col.querySelector('.cnt'); if(cnt)cnt.textContent=String(parseInt(cnt.textContent||'0',10)+1);}
+      closeModal(); toast('Task added to \u201CTo Do\u201D');
+    });
+  }
+  exact('New Task').forEach(function(b){on(b,newTask);});
+
+  /* ===== Invite member ===== */
+  exact('Invite member').forEach(function(b){on(b,function(){
+    var m=openModal('Invite team member',
+      '<label>Email</label><input id="iv1" placeholder="name@company.com">'+
+      '<label>Role</label><select id="iv2"><option>Field worker</option><option>Office / Project lead</option><option>Owner / Admin</option><option>External company (1 project)</option></select>',
+      '<button class="btn btn-ghost" id="ivc">Cancel</button><button class="btn btn-primary" id="ivk">Send invite</button>');
+    on(m.querySelector('#ivc'),closeModal);
+    on(m.querySelector('#ivk'),function(){
+      var em=(m.querySelector('#iv1').value||'').trim()||'new.member@company.com';
+      var role=m.querySelector('#iv2').value;
+      var tbl=document.querySelector('#web-team .tbl');
+      if(tbl){var nm=em.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,function(s){return s.toUpperCase();});
+        var ini=nm.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+        var dev=role.indexOf('Field')>=0?'Mobile':(role.indexOf('External')>=0?'Mobile / Web':'Web');
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td><div class="who"><span class="av a1">'+esc(ini)+'</span>'+esc(nm)+'</div></td><td>'+esc(role)+'</td><td style="color:var(--text-2)">'+dev+'</td><td><span class="pill b-req">Invited</span></td>';
+        tbl.appendChild(tr);}
+      closeModal(); toast('Invitation sent to '+em);
+    });
+  });});
+
+  /* ===== Manage plan ===== */
+  exact('Manage plan').forEach(function(b){on(b,function(){
+    var m=openModal('Manage subscription',
+      '<div class="planopt"><div class="pt">Starter <span>\u20AC19 / user / mo</span></div><div class="pp">Up to 3 users · core projects, chat, photos</div></div>'+
+      '<div class="planopt cur"><div class="pt">Professional · current <span>\u20AC29 / user / mo</span></div><div class="pp">Forms, time tracking, integrations, offline</div></div>'+
+      '<div class="planopt"><div class="pt">Business <span>\u20AC39 / user / mo</span></div><div class="pp">Unlimited externals, advanced reports, API</div></div>',
+      '<button class="btn btn-ghost" id="plc">Close</button><button class="btn btn-primary" id="plk">Save plan</button>');
+    m.querySelectorAll('.planopt').forEach(function(p){p.addEventListener('click',function(){m.querySelectorAll('.planopt').forEach(function(x){x.classList.remove('cur');});p.classList.add('cur');});});
+    on(m.querySelector('#plc'),closeModal);
+    on(m.querySelector('#plk'),function(){var sel=m.querySelector('.planopt.cur .pt').textContent.split('\u00B7')[0].split('\u20AC')[0].trim();closeModal();toast('Plan updated: '+sel);});
+  });});
+
+  /* ===== Generate Report ===== */
+  exact('Generate Report').forEach(function(b){on(b,function(){
+    var m=openModal('Generate project report',
+      '<div style="font-size:13px;color:var(--text-2);margin-bottom:14px">Compiled from the project activity, photos, time and signed forms:</div>'+
+      '<div style="border:1px solid var(--border);border-radius:12px;padding:16px;font-size:13px;line-height:1.7">'+
+      '<div style="font-weight:700;font-size:15px;margin-bottom:6px">New Build — 12 Linden Street</div>'+
+      '<div style="color:var(--text-2)">Period: Jun 16–25, 2026 · 42.5 hrs logged</div>'+
+      '<ul style="margin:10px 0 0 18px;color:var(--text-2)"><li>Ground floor wired, distribution board fitted</li><li>3 site photos documented</li><li>Weekly Report — Week 25 signed</li></ul></div>',
+      '<button class="btn btn-ghost" id="rpc">Close</button><button class="btn btn-primary" id="rpk">Download PDF</button>');
+    on(m.querySelector('#rpc'),closeModal);
+    on(m.querySelector('#rpk'),function(){closeModal();toast('Report exported as PDF');});
+  });});
+
+  /* ===== New Template ===== */
+  exact('New Template').forEach(function(b){on(b,function(){
+    var m=openModal('New form template',
+      '<label>Template name</label><input placeholder="e.g. Electrical test certificate">'+
+      '<label>Based on</label><select><option>Blank</option><option>Daily Report</option><option>Timesheet</option><option>Handover Protocol</option></select>',
+      '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="tpk">Create template</button>');
+    on(m.querySelector('#tpk'),function(){closeModal();toast('Template created — open it to add fields');});
+  });});
+
+  /* ===== Add (project detail) ===== */
+  exact('Add').forEach(function(b){on(b,function(){
+    var m=openModal('Add to project',
+      '<div class="addopt" data-t="Photo / document uploaded"><div class="ai" style="background:var(--info)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg></div><div><div style="font-weight:600;font-size:14px">Photo / document</div><div style="font-size:12px;color:var(--text-3)">Upload from your device</div></div></div>'+
+      '<div class="addopt" data-t="New form started"><div class="ai" style="background:var(--success)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><div style="font-weight:600;font-size:14px">Fill a form</div><div style="font-size:12px;color:var(--text-3)">Daily report, handover, timesheet…</div></div></div>'+
+      '<div class="addopt" data-t="Task created"><div class="ai" style="background:var(--primary)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div><div style="font-weight:600;font-size:14px">Add a task</div><div style="font-size:12px;color:var(--text-3)">Assign work to the team</div></div></div>','');
+    m.querySelectorAll('.addopt').forEach(function(o){o.addEventListener('click',function(){closeModal();toast(o.getAttribute('data-t'));});});
+  });});
+
+  /* ===== Export / Filter / Sort ===== */
+  has('Export').forEach(function(b){on(b,function(){toast('Timesheet exported (CSV)');});});
+  exact('Filter').forEach(function(b){on(b,function(){toast('Filter by status, team or date');});});
+  exact('Sort').forEach(function(b){on(b,function(){toast('Sorted by last updated');});});
+
+  /* ===== Status filter chips (Projects) ===== */
+  var pf=document.querySelector('#web-projects .toolbar .chips');
+  if(pf){pf.querySelectorAll('.chip').forEach(function(chip){chip.addEventListener('click',function(){
+    pf.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active');});chip.classList.add('active');
+    var f=chip.textContent.trim();
+    document.querySelectorAll('#web-projects .pcards .pcard').forEach(function(card){
+      var bd=card.querySelector('.badge2');var st=bd?bd.textContent.trim():'';
+      card.style.display=(f==='All'||st===f)?'':'none';
+    });
+  });});}
+
+  /* ===== File-tab chips (single select) ===== */
+  document.querySelectorAll('#tab-files .chips .chip').forEach(function(chip){chip.addEventListener('click',function(){
+    document.querySelectorAll('#tab-files .chips .chip').forEach(function(c){c.classList.remove('active');});chip.classList.add('active');
+  });});
+
+  /* ===== Live search ===== */
+  var sb=document.querySelector('.topbar .search input');
+  if(sb){sb.addEventListener('input',function(){
+    var q=sb.value.trim().toLowerCase();
+    document.querySelectorAll('#web-projects .pcard').forEach(function(c){var t=(c.querySelector('h4').textContent+' '+c.querySelector('.meta').textContent).toLowerCase();c.style.display=t.indexOf(q)>=0?'':'none';});
+    document.querySelectorAll('#web-dashboard .prow').forEach(function(r){r.style.display=r.textContent.toLowerCase().indexOf(q)>=0?'':'none';});
+  });}
+
+  /* ===== Notifications + Help ===== */
+  function nrow(t,s){return '<div class="nrow"><span class="nd"></span><div><div class="nt">'+t+'</div><div class="ns">'+s+'</div></div></div>';}
+  var nb=document.querySelector('.topbar .iconbtn[aria-label="Notifications"]');
+  on(nb,function(){
+    var m=openModal('Notifications',
+      nrow('Tom Walker uploaded 3 photos','New Build — 12 Linden Street · 14 min ago')+
+      nrow('Sarah Lewis signed Weekly Report — Week 25','Form signed · 1 hr ago')+
+      nrow('\u201CBook handover with customer\u201D is overdue','New Build — 12 Linden Street · today'),
+      '<button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-primary" id="nfk">Mark all read</button>');
+    on(m.querySelector('#nfk'),function(){closeModal();toast('All notifications marked as read');var d=nb.querySelector('.dot');if(d)d.style.display='none';});
+  });
+  on(document.querySelector('.topbar .iconbtn[aria-label="Help"]'),function(){
+    openModal('Help &amp; support','<div style="font-size:13.5px;line-height:1.7;color:var(--text-2)">This is an interactive demo of Baupilot.<br><br>• Use the <b>Office · Web</b> / <b>Field · Mobile</b> switch at the top to explore both apps.<br>• Click cards, tabs, quick actions and buttons — they all respond.<br>• Sign in with the pre-filled details on either login screen.</div>','<button class="btn btn-primary" onclick="closeModal()">Got it</button>');
+  });
+
+  /* ===== File previews ===== */
+  document.querySelectorAll('.file').forEach(function(f){f.style.cursor='pointer';f.addEventListener('click',function(){
+    var name=f.querySelector('.fn').textContent;
+    openModal(name,'<div style="height:200px;border-radius:12px;background:linear-gradient(135deg,#64748B,#334155);display:grid;place-items:center;color:#fff"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></div>',
+      '<button class="btn btn-ghost" id="fls">Share</button><button class="btn btn-primary" id="fld">Download</button>');
+    on(document.querySelector('#fls'),function(){closeModal();toast('Share link copied');});
+    on(document.querySelector('#fld'),function(){closeModal();toast('Downloading '+name);});
+  });});
+
+  /* ===== Form template cards ===== */
+  document.querySelectorAll('.ftpl').forEach(function(f){f.addEventListener('click',function(){
+    var name=f.querySelector('h4').textContent;
+    openModal(name,'<div style="font-size:13.5px;color:var(--text-2);line-height:1.6">'+esc(f.querySelector('p').textContent)+'<br><br>Send this template to the field app so your team can fill and sign it on site.</div>',
+      '<button class="btn btn-ghost" onclick="closeModal()">Preview</button><button class="btn btn-primary" id="ftk">Send to field app</button>');
+    on(document.querySelector('#ftk'),function(){closeModal();toast('\u201C'+name+'\u201D sent to the field app');});
+  });});
+
+  /* ===== Kanban cards ===== */
+  document.querySelectorAll('.ktask').forEach(function(k){k.style.cursor='pointer';k.addEventListener('click',function(){
+    var title=k.querySelector('.tt').textContent;var proj=k.querySelector('.meta').textContent;var pill=k.querySelector('.pill');
+    var m=openModal(title,'<div style="font-size:13px;color:var(--text-2);line-height:1.9"><b>Project:</b> '+esc(proj)+'<br><b>Assignee:</b> Mark Hayes<br><b>Status:</b> '+esc(pill?pill.textContent:'—')+'</div>',
+      '<button class="btn btn-ghost" onclick="closeModal()">Close</button><button class="btn btn-primary" id="ktk">Mark done</button>');
+    on(m.querySelector('#ktk'),function(){closeModal();toast('\u201C'+title+'\u201D marked done');});
+  });});
+
+  /* ===== "View all" activity ===== */
+  document.querySelectorAll('.card .ch a').forEach(function(a){if(a.textContent.trim().toLowerCase()==='view all'){a.addEventListener('click',function(e){e.preventDefault();toast('Showing full activity history');});}});
+
+  /* ===== Composer: send message ===== */
+  document.querySelectorAll('.composer').forEach(function(c){
+    var div=c.querySelector('.inp'); var input=document.createElement('input');
+    input.type='text'; input.placeholder=div.textContent.trim();
+    input.style.cssText='flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--text);outline:none;font-family:inherit';
+    c.replaceChild(input,div);
+    var send=c.querySelector('.send');
+    function go(){var v=input.value.trim();if(!v)return;var feed=c.parentElement.querySelector('.cb');if(feed){var row=document.createElement('div');row.className='feed-row';row.innerHTML='<div class="av a4">MH</div><div><div class="ft"><b>You</b> · Owner</div><div class="ft" style="margin-top:3px">'+esc(v)+'</div><div class="fm">Just now</div></div>';feed.appendChild(row);}input.value='';toast('Message sent');}
+    on(send,go); input.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+  });
+  document.querySelectorAll('.composer .iconbtn[aria-label="Attach"]').forEach(function(b){on(b,function(){toast('Attach a photo, file or scan');});});
+
+  /* ===== Password toggles + checkboxes + links ===== */
+  document.querySelectorAll('.field .toggle').forEach(function(t){t.addEventListener('click',function(){var i=t.parentElement.querySelector('input');if(i.type==='password'){i.type='text';t.textContent='Hide';}else{i.type='password';t.textContent='Show';}});});
+  document.querySelectorAll('.check').forEach(function(c){c.addEventListener('click',function(){var b=c.querySelector('.box');if(b)b.classList.toggle('on');});});
+  document.querySelectorAll('.link').forEach(function(l){l.addEventListener('click',function(e){e.preventDefault();toast('Password reset link sent to your email');});});
+  document.querySelectorAll('.auth-foot a').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();toast('Starting your free trial…');});});
+
+  /* ===== MOBILE: timer toggle ===== */
+  (function(){
+    var btn=document.querySelector('#m-time .bigbtn'); if(!btn)return;
+    var ring=document.querySelector('#m-time .timer-ring'); var running=true;
+    btn.addEventListener('click',function(){
+      running=!running;
+      if(running){btn.classList.remove('start');btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>Stop timer';if(ring)ring.style.background='conic-gradient(var(--primary) 0deg 156deg,var(--surface-3) 156deg 360deg)';toast('Timer resumed');}
+      else{btn.classList.add('start');btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Start timer';if(ring)ring.style.background='var(--surface-3)';toast('Time saved · 2.5 h logged to 12 Linden Street');}
+    });
+  })();
+
+  /* ===== MOBILE: weather segment / form submit / bell / camera tools ===== */
+  document.querySelectorAll('#m-form .seg .o').forEach(function(o){o.addEventListener('click',function(){o.parentElement.querySelectorAll('.o').forEach(function(x){x.classList.remove('sel');});o.classList.add('sel');});});
+  var msub=document.querySelector('#m-form .bigbtn.start'); if(msub){msub.addEventListener('click',function(){toast('Report submitted & synced');});}
+  document.querySelectorAll('#m-projects .m-iconcirc').forEach(function(b){on(b,function(){toast('You\u2019re all caught up');});});
+  document.querySelectorAll('#m-camera [style*="backdrop-filter"]').forEach(function(c){c.style.cursor='pointer';c.addEventListener('click',function(){toast(c.textContent.trim()+' tool');});});
+})();
+</script>
+
+<!-- ============================================================
+     VISITOR ANALYTICS  →  logs to your Google Sheet
+     ------------------------------------------------------------
+     STEP 1: In your Google Sheet, open Extensions ▸ Apps Script,
+             paste the server code (see the message / README),
+             then Deploy ▸ New deployment ▸ Web app
+             (Execute as: Me · Who has access: Anyone).
+     STEP 2: Copy the deployment URL (it ends in /exec) and paste
+             it into WEB_APP_URL below. That's the only edit needed.
+     ============================================================ -->
+<script>
+(function(){
+  /* 🔻 PASTE YOUR APPS SCRIPT WEB APP URL HERE (ends in /exec) 🔻 */
+  var WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzWcW16Ol5YVOlMu2WMda2AyK-nAWwfKAyk5ZGly8DUshDs66JJ3FgirOu4XOCXvmVkSg/exec';
+  /* 🔺 ------------------------------------------------------- 🔺 */
+
+  if(!WEB_APP_URL || WEB_APP_URL.indexOf('PASTE_YOUR') >= 0){
+    console.log('[analytics] Add your Apps Script Web App URL to start logging.');
+    return; // nothing is sent until you configure the URL above
+  }
+
+  /* ---- ids ---- */
+  function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+  var sessionId = uid(), visitorId;
+  try{ visitorId = localStorage.getItem('bp_vid'); if(!visitorId){ visitorId = uid(); localStorage.setItem('bp_vid', visitorId); } }
+  catch(e){ visitorId = sessionId; }
+  var t0 = Date.now();
+
+  /* ---- environment ---- */
+  function deviceType(){
+    var ua = navigator.userAgent;
+    if(/iPad|Tablet|PlayBook|Silk|Android(?!.*Mobile)/i.test(ua)) return 'Tablet';
+    if(/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Opera Mini/i.test(ua)) return 'Mobile';
+    return 'Desktop';
+  }
+  function osName(){
+    var u = navigator.userAgent;
+    if(/Windows NT/i.test(u)) return 'Windows';
+    if(/iPhone|iPad|iPod/i.test(u)) return 'iOS';
+    if(/Mac OS X/i.test(u)) return 'macOS';
+    if(/Android/i.test(u)) return 'Android';
+    if(/Linux/i.test(u)) return 'Linux';
+    return 'Other';
+  }
+  function browserName(){
+    var u = navigator.userAgent;
+    if(/Edg\//i.test(u)) return 'Edge';
+    if(/OPR\//i.test(u)) return 'Opera';
+    if(/Chrome\//i.test(u) && !/Chromium/i.test(u)) return 'Chrome';
+    if(/Firefox\//i.test(u)) return 'Firefox';
+    if(/Safari\//i.test(u)) return 'Safari';
+    return 'Other';
+  }
+  var TZ = (function(){ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone; }catch(e){ return ''; } })();
+
+  /* ---- where did they come from ---- */
+  function source(){
+    try{
+      var p = new URLSearchParams(location.search);
+      var utm = p.get('utm_source');
+      if(utm) return utm;
+    }catch(e){}
+    var r = document.referrer;
+    if(!r) return 'Direct / unknown';
+    try{
+      var h = new URL(r).hostname.replace(/^www\./,'');
+      if(/google\./i.test(h)) return 'Google';
+      if(/fiverr/i.test(h)) return 'Fiverr';
+      if(/bing\./i.test(h)) return 'Bing';
+      if(/duckduckgo/i.test(h)) return 'DuckDuckGo';
+      if(/facebook|fb\.com/i.test(h)) return 'Facebook';
+      if(/linkedin/i.test(h)) return 'LinkedIn';
+      if(/t\.co|twitter|x\.com/i.test(h)) return 'Twitter/X';
+      if(/instagram/i.test(h)) return 'Instagram';
+      if(/wa\.me|whatsapp/i.test(h)) return 'WhatsApp';
+      if(/youtube|youtu\.be/i.test(h)) return 'YouTube';
+      if(/upwork/i.test(h)) return 'Upwork';
+      return h;
+    }catch(e){ return r; }
+  }
+  function currentMode(){
+    var w = document.getElementById('webMode');
+    return (w && !w.classList.contains('hidden')) ? 'Office/Web' : 'Field/Mobile';
+  }
+
+  /* ---- send (fire-and-forget, no CORS issues) ---- */
+  function send(payload){
+    try{
+      var body = JSON.stringify(payload);
+      if(navigator.sendBeacon){
+        var ok = navigator.sendBeacon(WEB_APP_URL, new Blob([body], {type:'text/plain;charset=UTF-8'}));
+        if(ok) return;
+      }
+      fetch(WEB_APP_URL, { method:'POST', mode:'no-cors', keepalive:true,
+        headers:{'Content-Type':'text/plain;charset=UTF-8'}, body:body });
+    }catch(e){}
+  }
+
+  function log(event, detail){
+    send({
+      ts: new Date().toISOString(),
+      localTime: new Date().toString(),
+      event: event,
+      detail: (detail || '').toString().slice(0,150),
+      mode: currentMode(),
+      device: deviceType(),
+      os: osName(),
+      browser: browserName(),
+      screen: (window.screen ? window.screen.width + 'x' + window.screen.height : ''),
+      viewport: window.innerWidth + 'x' + window.innerHeight,
+      tz: TZ,
+      tzOffsetMin: new Date().getTimezoneOffset(),
+      lang: navigator.language || '',
+      source: source(),
+      referrer: document.referrer || '',
+      utm: location.search || '',
+      page: location.href,
+      sessionId: sessionId,
+      visitorId: visitorId,
+      ua: navigator.userAgent
+    });
+  }
+  window.bpLog = log; // exposed in case you want to log custom events
+
+  /* ---- 1) page open ---- */
+  log('session_start', document.title);
+
+  /* ---- 2) every click (button, link, card, tab, nav item…) ---- */
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('button, a, [role="tab"], .nav-m, .m-tab, .navitem, .pcard, .prow, .mcard, .qabtn, .ktask, .file, .ftpl, .chip, .tab, .planopt, .addopt');
+    if(!el) return;
+    var label = (el.getAttribute('aria-label') || el.textContent || '').replace(/\s+/g,' ').trim();
+    if(!label) label = (el.className || 'element').toString();
+    log('click', label.slice(0,80));
+  }, true);
+
+  /* ---- 3) navigation / login / mode (wrap existing functions) ---- */
+  var WRAP = {
+    showWeb:'navigate', showM:'navigate', showTab:'open_tab',
+    setMode:'switch_mode', openProject:'open_project',
+    webLogin:'login', webLogout:'logout',
+    mobileLogin:'login', mobileLogout:'logout'
+  };
+  Object.keys(WRAP).forEach(function(name){
+    if(typeof window[name] === 'function'){
+      var orig = window[name];
+      window[name] = function(){
+        try{
+          var arg = Array.prototype.slice.call(arguments).join(',');
+          var label = (name.indexOf('mobile')>=0 || name==='showM') ? 'mobile:'+arg
+                    : (name.indexOf('web')>=0 || name==='showWeb') ? 'web:'+arg
+                    : arg;
+          log(WRAP[name], label);
+        }catch(e){}
+        return orig.apply(this, arguments);
+      };
+    }
+  });
+
+  /* ---- 4) session end (duration) ---- */
+  function endSession(){
+    log('session_end', 'duration_sec:' + Math.round((Date.now() - t0)/1000));
+  }
+  window.addEventListener('pagehide', endSession);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'hidden') endSession();
+  });
+})();
+</script>
+</body>
+</html>
